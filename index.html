@@ -8,17 +8,52 @@
   <meta property="og:title" content="Duggan Bachelor Party — Panama City">
   <meta property="og:description" content="Jul 16–19, 2026 · JW Marriott Panama">
   <meta property="og:type" content="website">
-  <link rel="stylesheet" href="styles.css?v=1780041334">
+  <link rel="stylesheet" href="styles.css?v=1780042014">
   <link rel="preload" as="image" href="assets/intro-hype.png">
 </head>
 <body>
   <!-- ======================================================================
-       HYPE INTRO — 5-second animation; auto-dismisses, skippable
+       HYPE INTRO — 5-second cinematic hype reel; auto-dismisses, skippable
        ====================================================================== -->
   <div id="intro" class="intro" aria-hidden="false" role="dialog" aria-label="Bachelor party intro">
-    <div class="intro-bg" style="background-image: url('assets/intro-hype.png');"></div>
+    <!-- Scan wipe (0.0-0.4s) -->
+    <div class="intro-scan-wipe"></div>
+
+    <!-- Shaking image container -->
+    <div class="intro-shake-wrap">
+      <div class="intro-bg" style="background-image: url('assets/intro-hype.png');"></div>
+      <div class="intro-bg-pulse" style="background-image: url('assets/intro-hype.png');"></div>
+    </div>
+
+    <!-- Diagonal flag stripes parallax -->
+    <div class="intro-stripes"></div>
+
+    <!-- Targeting reticles -->
+    <div class="intro-reticle intro-reticle-1"></div>
+    <div class="intro-reticle intro-reticle-2"></div>
+
+    <!-- Muzzle flashes (4 total — 2 at 0.4s, 2 at 3.0s) -->
+    <div class="intro-muzzle intro-muzzle-l1"></div>
+    <div class="intro-muzzle intro-muzzle-r1"></div>
+    <div class="intro-muzzle intro-muzzle-l2"></div>
+    <div class="intro-muzzle intro-muzzle-r2"></div>
+
+    <!-- Canvas particle layer (sparks, embers, shrapnel) -->
+    <canvas id="intro-canvas" class="intro-canvas"></canvas>
+
+    <!-- Bottom vignette only -->
     <div class="intro-vignette"></div>
-    <div class="intro-flash"></div>
+
+    <!-- Grain film texture -->
+    <div class="intro-grain"></div>
+
+    <!-- Flashes (boom + final) -->
+    <div class="intro-flash intro-flash-boom"></div>
+    <div class="intro-flash intro-flash-final"></div>
+
+    <!-- Curtain wipe out -->
+    <div class="intro-curtain intro-curtain-top"></div>
+    <div class="intro-curtain intro-curtain-bottom"></div>
 
     <button class="intro-skip" id="intro-skip" type="button" aria-label="Skip intro">
       Skip <span aria-hidden="true">→</span>
@@ -26,7 +61,11 @@
 
     <div class="intro-content">
       <p class="intro-eyebrow">LD'S BACHELOR PARTY</p>
-      <h1 class="intro-title">PANAMA CITY</h1>
+      <h1 class="intro-title" data-text="PANAMA CITY">
+        <span class="intro-title-glitch glitch-r" aria-hidden="true">PANAMA CITY</span>
+        <span class="intro-title-glitch glitch-b" aria-hidden="true">PANAMA CITY</span>
+        <span class="intro-title-main">PANAMA CITY</span>
+      </h1>
       <p class="intro-dates">JULY 16 – 19, 2026</p>
       <div class="intro-enter" id="intro-enter">
         ENTER <span aria-hidden="true">→</span>
@@ -168,52 +207,192 @@
   </footer>
 
   <script>
-    window.__BUILD_VERSION = "1780041334";
+    window.__BUILD_VERSION = "1780042014";
 
-    // ── Hype intro controller ────────────────────────────────────────────
+    // ── Hype intro controller + Canvas particle engine ───────────────────
     (function () {
       const intro = document.getElementById("intro");
       if (!intro) return;
       const skipBtn = document.getElementById("intro-skip");
       const enterBtn = document.getElementById("intro-enter");
+      const canvas = document.getElementById("intro-canvas");
       const INTRO_DURATION_MS = 5000;
+      const DISMISS_MS = 900; // curtain wipe (0.5s) + small buffer
 
-      // Suppress on same-session re-renders (refresh, hash nav, etc.)
-      // so people don't sit through it twice in one sitting.
       try {
         if (sessionStorage.getItem("introSeen") === "1") {
           intro.remove();
           return;
         }
-      } catch (e) { /* sessionStorage may be blocked in some contexts */ }
+      } catch (e) {}
 
-      // Honor the OS-level reduced-motion preference: show static splash,
-      // require an explicit Enter click (no auto-dismiss).
       const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       function dismiss() {
         if (intro.classList.contains("intro-dismissed")) return;
         intro.classList.add("intro-dismissed");
         try { sessionStorage.setItem("introSeen", "1"); } catch (e) {}
-        setTimeout(() => intro.remove(), 600);
+        if (rafId) cancelAnimationFrame(rafId);
+        setTimeout(() => intro.remove(), DISMISS_MS);
       }
 
       skipBtn?.addEventListener("click", (e) => { e.stopPropagation(); dismiss(); });
       enterBtn?.addEventListener("click", (e) => { e.stopPropagation(); dismiss(); });
-      // Click anywhere on the intro (after 0.5s) also dismisses
       setTimeout(() => intro.addEventListener("click", dismiss), 500);
-      // Esc key dismisses
       document.addEventListener("keydown", function onEsc(e) {
         if (e.key === "Escape") { dismiss(); document.removeEventListener("keydown", onEsc); }
       });
 
+      let rafId = null;
+
       if (!reduceMotion) {
-        // Auto-dismiss at end of animation timeline
         setTimeout(dismiss, INTRO_DURATION_MS);
+
+        // ── Canvas particle engine ──────────────────────────────────────
+        // Two particle classes:
+        //   1. Embers: warm sparks floating upward from bottom edge (continuous)
+        //   2. Shrapnel: cool/hot fragments bursting from screen center (0.8s)
+        if (canvas && canvas.getContext) {
+          const ctx = canvas.getContext("2d");
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          let W = 0, H = 0;
+          function resize() {
+            W = canvas.clientWidth;
+            H = canvas.clientHeight;
+            canvas.width = W * dpr;
+            canvas.height = H * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          }
+          resize();
+          window.addEventListener("resize", resize);
+
+          const particles = [];
+
+          function ember() {
+            return {
+              x: Math.random() * W,
+              y: H + Math.random() * 20,
+              vx: (Math.random() - 0.5) * 0.6,
+              vy: -(0.6 + Math.random() * 1.6),
+              life: 1.0,
+              decay: 0.003 + Math.random() * 0.004,
+              size: 1.2 + Math.random() * 2.4,
+              hue: 18 + Math.random() * 28, // orange→yellow
+              type: "ember",
+            };
+          }
+
+          function shrapnel(angle) {
+            const speed = 4 + Math.random() * 8;
+            return {
+              x: W / 2 + (Math.random() - 0.5) * 30,
+              y: H / 2 + (Math.random() - 0.5) * 30,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed,
+              life: 1.0,
+              decay: 0.012 + Math.random() * 0.01,
+              size: 2 + Math.random() * 3,
+              hue: Math.random() < 0.7 ? (15 + Math.random() * 30) : (45 + Math.random() * 15),
+              type: "shrapnel",
+              trail: [],
+            };
+          }
+
+          // Schedule shrapnel burst at 0.8s
+          setTimeout(() => {
+            for (let i = 0; i < 18; i++) {
+              particles.push(shrapnel((Math.PI * 2 * i) / 18 + (Math.random() - 0.5) * 0.3));
+            }
+          }, 800);
+
+          // Second shrapnel burst on the 3.0s muzzle flashes
+          setTimeout(() => {
+            for (let i = 0; i < 12; i++) {
+              particles.push(shrapnel((Math.PI * 2 * i) / 12 + Math.random()));
+            }
+          }, 3000);
+
+          let lastEmberSpawn = 0;
+          const startTime = performance.now();
+
+          function frame(now) {
+            const elapsed = now - startTime;
+            if (elapsed > INTRO_DURATION_MS + 500) {
+              ctx.clearRect(0, 0, W, H);
+              return;
+            }
+
+            ctx.clearRect(0, 0, W, H);
+
+            // Spawn embers — ramp up after 0.4s, peak 1.5-4.5s
+            const emberIntensity = elapsed < 400 ? 0
+              : elapsed < 1500 ? (elapsed - 400) / 1100
+              : elapsed < 4500 ? 1
+              : Math.max(0, (5000 - elapsed) / 500);
+            const spawnInterval = 60 / Math.max(0.1, emberIntensity);
+            if (now - lastEmberSpawn > spawnInterval) {
+              lastEmberSpawn = now;
+              const count = Math.ceil(emberIntensity * 2);
+              for (let i = 0; i < count; i++) particles.push(ember());
+            }
+
+            // Update + draw
+            for (let i = particles.length - 1; i >= 0; i--) {
+              const p = particles[i];
+              p.x += p.vx;
+              p.y += p.vy;
+
+              if (p.type === "ember") {
+                p.vy += -0.005; // slight upward drift
+                p.vx += (Math.random() - 0.5) * 0.05;
+                p.life -= p.decay;
+              } else {
+                p.vy += 0.18; // gravity for shrapnel
+                p.vx *= 0.985;
+                p.life -= p.decay;
+                p.trail.push({ x: p.x, y: p.y });
+                if (p.trail.length > 6) p.trail.shift();
+              }
+
+              if (p.life <= 0 || p.y < -10 || p.x < -10 || p.x > W + 10) {
+                particles.splice(i, 1);
+                continue;
+              }
+
+              const alpha = Math.max(0, Math.min(1, p.life));
+
+              if (p.type === "shrapnel" && p.trail.length > 1) {
+                ctx.strokeStyle = `hsla(${p.hue}, 100%, 60%, ${alpha * 0.5})`;
+                ctx.lineWidth = p.size * 0.6;
+                ctx.beginPath();
+                ctx.moveTo(p.trail[0].x, p.trail[0].y);
+                for (let t = 1; t < p.trail.length; t++) ctx.lineTo(p.trail[t].x, p.trail[t].y);
+                ctx.stroke();
+              }
+
+              const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+              grad.addColorStop(0, `hsla(${p.hue}, 100%, 90%, ${alpha})`);
+              grad.addColorStop(0.4, `hsla(${p.hue}, 100%, 55%, ${alpha * 0.6})`);
+              grad.addColorStop(1, `hsla(${p.hue}, 100%, 40%, 0)`);
+              ctx.fillStyle = grad;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+              ctx.fill();
+
+              ctx.fillStyle = `hsla(${p.hue}, 100%, 95%, ${alpha})`;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.size * 0.6, 0, Math.PI * 2);
+              ctx.fill();
+            }
+
+            rafId = requestAnimationFrame(frame);
+          }
+          rafId = requestAnimationFrame(frame);
+        }
       }
     })();
   </script>
-  <script src="config.js?v=1780041334"></script>
-  <script src="app.js?v=1780041334"></script>
+  <script src="config.js?v=1780042014"></script>
+  <script src="app.js?v=1780042014"></script>
 </body>
 </html>
