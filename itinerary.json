@@ -28,7 +28,8 @@
       "start": "2026-07-16T08:00:00",
       "end": "2026-07-16T20:00:00",
       "transparency": "transparent",
-      "description": "Most attendees arrive Thursday afternoon. Plan to be at the JW by ~6pm for the group dinner at 7pm. Uber from Tocumen International Airport (PTY) to JW Marriott Panama takes ~30–45 min depending on traffic; cost ~$30–40 USD."
+      "description": "Most attendees arrive Thursday afternoon. Plan to be at the JW by ~6pm for the group dinner at 7pm. Uber from Tocumen International Airport (PTY) to JW Marriott Panama takes ~30–45 min depending on traffic; cost ~$30–40 USD.",
+      "location": "Tocumen International Airport (PTY), Panama City"
     },
 
     {
@@ -58,7 +59,8 @@
       "type": "travel",
       "start": "2026-07-16T18:30:00",
       "end": "2026-07-16T19:00:00",
-      "description": "Uber to Casco Viejo, ~15–20 min from JW. Plan to leave the lobby together at 6:30 PM for the 7:00 PM reservation. Coordinate Uber carpools in the group chat."
+      "description": "Uber to Casco Viejo, ~15–20 min from JW. Plan to leave the lobby together at 6:30 PM for the 7:00 PM reservation. Coordinate Uber carpools in the group chat.",
+      "location": "JW Marriott Panama lobby — pickup point"
     },
     {
       "id": "thu-dinner",
@@ -94,7 +96,8 @@
       "type": "travel",
       "start": "2026-07-17T08:00:00",
       "end": "2026-07-17T09:00:00",
-      "description": "Launch point TBD — confirm with George. Allow time for traffic + group muster. Bring: swimsuit, sunscreen, hat, dry bag for phone. Breakfast at the hotel before departure (MASI opens early; included)."
+      "description": "Launch point TBD — most catamaran charters depart from the Amador Causeway marinas (Flamenco / La Playita) ~15 min from JW. Confirm exact pier with George. Allow time for traffic + group muster. Bring: swimsuit, sunscreen, hat, dry bag for phone. Breakfast at the hotel before departure (MASI opens early; included).",
+      "location": "JW Marriott Panama lobby — pickup point (presumed launch: Amador Causeway marina)"
     },
     {
       "id": "fri-catamaran",
@@ -111,7 +114,8 @@
       "type": "travel",
       "start": "2026-07-17T15:00:00",
       "end": "2026-07-17T16:00:00",
-      "description": "Return to launch point + Uber to JW. Decompress, shower before Friday dinner."
+      "description": "Return to launch point + Uber to JW. Decompress, shower before Friday dinner.",
+      "location": "Amador Causeway marina (presumed) → JW Marriott Panama"
     },
 
     {
@@ -151,7 +155,8 @@
       "type": "travel",
       "start": "2026-07-17T21:00:00",
       "end": "2026-07-17T21:30:00",
-      "description": "Group muster point: Casco Viejo. Uber from JW or post-dinner location."
+      "description": "Group muster point: Casco Viejo (presumed: Tantalo Rooftop, Calle 8 & Av B). Uber from JW or post-dinner location.",
+      "location": "Tantalo Rooftop (presumed muster), Casco Viejo, Panama City"
     },
     {
       "id": "fri-rooftop",
@@ -169,7 +174,8 @@
       "start": "2026-07-18T00:30:00",
       "end": "2026-07-18T02:30:00",
       "transparency": "transparent",
-      "description": "OPT-IN for the late-night crowd. Pick up where rooftop crawl ends — head to a club or burlesque venue. Specific spot decided day-of based on group pulse. Wake-up call for Saturday daytime activities is real — plan accordingly."
+      "description": "OPT-IN for the late-night crowd. Presumed venue: Le Palace (Bellavista) — the standard Panama City gentlemen's club / late-show pick recommended in most nightlife guides; ~15 min Uber from Casco Viejo. Alternatives: Teatro Amador (Casco Viejo nightclub w/ themed shows, 2-floor) or La Gruta Azul (more high-energy floor). Specific spot decided day-of based on group pulse. Wake-up call for Saturday daytime activities is real — plan accordingly.",
+      "location": "Le Palace (presumed), Bellavista, Panama City"
     },
 
     {
@@ -179,7 +185,8 @@
       "start": "2026-07-18T08:30:00",
       "end": "2026-07-18T09:30:00",
       "transparency": "transparent",
-      "description": "TRACK A opt-in only. Uber from JW to the Miraflores Visitor Center. ~30 min drive. Buy tickets online in advance: https://visitcanaldepanama.com/en/points-of-interest/miraflores-visitor-center/."
+      "description": "TRACK A opt-in only. Uber from JW to the Miraflores Visitor Center. ~30 min drive. Buy tickets online in advance: https://visitcanaldepanama.com/en/points-of-interest/miraflores-visitor-center/.",
+      "location": "JW Marriott Panama lobby — pickup point"
     },
     {
       "id": "sat-track-A-locks",
@@ -199,7 +206,8 @@
       "start": "2026-07-18T08:30:00",
       "end": "2026-07-18T09:30:00",
       "transparency": "transparent",
-      "description": "TRACK B opt-in only. Range location TBD (needs booking — confirm with George/Laurence). Allow Uber time + check-in. Bring ID."
+      "description": "TRACK B opt-in only. Presumed range: Top Gun Panamá (https://topgunpanama.com) — bachelor-party-friendly experience packages w/ 9mm pistol, AR15, 12ga shotgun, revolver. Confirm booking with the range in advance. Bring valid photo ID. Allow Uber time + check-in.",
+      "location": "JW Marriott Panama lobby — pickup point (presumed range: Top Gun Panamá)"
     },
     {
       "id": "sat-track-B-shooting",
@@ -208,7 +216,8 @@
       "start": "2026-07-18T09:30:00",
       "end": "2026-07-18T12:30:00",
       "transparency": "transparent",
-      "description": "TRACK B: Tactical shooting. Specific range + booking TBD. All tracks reconvene at the Mercado de Marisco (fish market) for a 1:00 PM group lunch."
+      "description": "TRACK B: Tactical shooting. Presumed venue: Top Gun Panamá (https://topgunpanama.com) — bachelor-party-friendly tourist experience. Multi-weapon packages (9mm, AR15, 12ga, revolver). Hours typically 9:30 AM – 6:30 PM Tue–Sat. Bring valid photo ID; tourists do NOT need a Panama firearms permit for supervised range experiences. Confirm booking + total $ with George by Thu Jul 2. All tracks reconvene at the Mercado de Marisco (fish market) for a 1:00 PM group lunch.",
+      "location": "Top Gun Panamá (presumed), Panama City"
     },
 
     {
@@ -229,16 +238,18 @@
       "start": "2026-07-18T07:00:00",
       "end": "2026-07-18T08:00:00",
       "transparency": "transparent",
-      "description": "TRACK C opt-in only. Course + tee time TBD (needs booking — interested attendees coordinate). Early start to beat heat + return for Saturday afternoon."
+      "description": "TRACK C opt-in only. Presumed course: Santa María Golf Club (Jack Nicklaus design, Costa del Este) — ~15 min from JW, par-72, 7,153 yds, Troon-managed. Tee time + non-resident guest access need booking in advance (call +507 340-9300 or info@santamariapanama.com). Early 7 AM Uber to beat heat + Panama afternoon rain.",
+      "location": "JW Marriott Panama lobby — pickup point (presumed course: Santa María Golf Club)"
     },
     {
       "id": "sat-track-C-golf",
-      "summary": "[TRACK C] Golf (course TBD)",
+      "summary": "[TRACK C] Golf — Santa María Golf Club (Jack Nicklaus)",
       "type": "optin",
       "start": "2026-07-18T08:00:00",
       "end": "2026-07-18T12:30:00",
       "transparency": "transparent",
-      "description": "TRACK C: Golf. 18 holes, course + tee time TBD (book early — pace-of-play target is 4.5 hrs to hit the 12:30 wrap). Coordinate via the opt-in form or ping Laurence by Thu Jul 2. All tracks reconvene at the Mercado de Marisco (fish market) for a 1:00 PM group lunch — Uber straight from the course."
+      "description": "TRACK C: Golf, 18 holes at Santa María Golf Club (presumed) — Jack Nicklaus design, Troon-managed, par-72, 7,153 yds from the back tees. Sat green fee ~$175 + tax; equipment rental ~$50 + tax. Tee time + non-resident guest access need booking in advance (https://www.santamariapanama.com/en/golf, +507 340-9300, info@santamariapanama.com). Pace-of-play target: 4.5 hrs to hit the 12:30 wrap. Coordinate via the opt-in form or ping Laurence by Thu Jul 2. All tracks reconvene at the Mercado de Marisco (fish market) for a 1:00 PM group lunch — Uber straight from the course.",
+      "location": "Santa María Golf Club (presumed), Costa del Este, Panama City"
     },
 
     {
@@ -248,7 +259,8 @@
       "start": "2026-07-18T14:45:00",
       "end": "2026-07-18T18:00:00",
       "transparency": "transparent",
-      "description": "Free time at JW after the group fish-market lunch. Pool deck (Azul Restaurant has the poolside bar), shower, change into dinner clothes (pants + nice shoes for Gaucho's). Don't be late for 7 PM."
+      "description": "Free time at JW after the group fish-market lunch. Pool deck (Azul Restaurant has the poolside bar), shower, change into dinner clothes (pants + nice shoes for Gaucho's). Don't be late for 7 PM.",
+      "location": "JW Marriott Panama, Punta Pacifica"
     },
 
     {
@@ -257,7 +269,8 @@
       "type": "travel",
       "start": "2026-07-18T18:30:00",
       "end": "2026-07-18T19:00:00",
-      "description": "Gaucho's is on Calle Uruguay, ~10 min from JW. Coordinate Uber carpools. Dress: pants + nice shoes."
+      "description": "Gaucho's is on Calle Uruguay, ~10 min from JW. Coordinate Uber carpools. Dress: pants + nice shoes.",
+      "location": "JW Marriott Panama lobby — pickup point"
     },
     {
       "id": "sat-dinner",
@@ -294,7 +307,8 @@
       "start": "2026-07-19T09:00:00",
       "end": "2026-07-19T10:30:00",
       "transparency": "transparent",
-      "description": "Final hangs at MASI (JW breakfast — included). Send-off + photos before flights. Some attendees stay through Mon Jul 20 (George stays through Monday). Format: floating drop-in; pop down whenever you're up."
+      "description": "Final hangs at MASI (JW breakfast — included). Send-off + photos before flights. Some attendees stay through Mon Jul 20 (George stays through Monday). Format: floating drop-in; pop down whenever you're up.",
+      "location": "MASI Restaurant, JW Marriott Panama (lobby level)"
     },
     {
       "id": "sun-checkout",
@@ -302,7 +316,8 @@
       "type": "locked",
       "start": "2026-07-19T11:00:00",
       "end": "2026-07-19T11:30:00",
-      "description": "Standard 11:00 AM checkout. Drop bags at concierge if your flight is later. Settle any incidentals at the front desk."
+      "description": "Standard 11:00 AM checkout. Drop bags at concierge if your flight is later. Settle any incidentals at the front desk.",
+      "location": "JW Marriott Panama, Calle Isaac Hannono Missri, Punta Pacifica, Panama City, Panama"
     },
     {
       "id": "trip-bookend-departure",
@@ -311,7 +326,8 @@
       "start": "2026-07-19T12:00:00",
       "end": "2026-07-20T23:59:00",
       "transparency": "transparent",
-      "description": "Most attendees depart Sunday afternoon/evening. Some stay through Mon Jul 20 (George). Uber from JW to Tocumen International (PTY) takes ~30–45 min; cost ~$30–40 USD. Drop your flight info via the form on the bachelor party site so we can coordinate carpools."
+      "description": "Most attendees depart Sunday afternoon/evening. Some stay through Mon Jul 20 (George). Uber from JW to Tocumen International (PTY) takes ~30–45 min; cost ~$30–40 USD. Drop your flight info via the form on the bachelor party site so we can coordinate carpools.",
+      "location": "Tocumen International Airport (PTY), Panama City"
     }
   ]
 }
