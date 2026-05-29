@@ -52,23 +52,9 @@
   })();
 
   // ===================================================================
-  // 4-day calendar widget
+  // 4-day calendar widget — rendered later by renderScheduleGrid() once
+  // itinerary.json has loaded (it reuses the same normalized event data).
   // ===================================================================
-  (function wireCalendarWidget() {
-    const frame = document.getElementById("calendar-widget-frame");
-    if (!frame || !cfg.calendarId) return;
-    // Minimal embed URL — Google's parameter-rich embed URLs sometimes render
-    // a blank iframe due to internal SAMEORIGIN checks. Sticking to the
-    // straightforward 3-param URL keeps the iframe reliable; users can switch
-    // to week/day view via Google's UI inside the iframe.
-    const params = new URLSearchParams({
-      src: cfg.calendarId,
-      ctz: cfg.calendarTimezone,
-      mode: "WEEK",
-      dates: "20260716/20260720",
-    });
-    frame.src = `https://calendar.google.com/calendar/embed?${params.toString()}`;
-  })();
 
   // ===================================================================
   // Weather (Open-Meteo)
@@ -408,9 +394,141 @@
     tabsContainer.innerHTML = "";
   }
 
+  // ===================================================================
+  // 4-day schedule grid (custom widget — no iframe)
+  // ===================================================================
+  const scheduleGrid = document.getElementById("schedule-grid");
+
+  // Visible window: 8 AM to 2 AM next day. Events outside this window are
+  // included as headers/banners or just clipped — currently nothing real
+  // falls outside (latest is cigar bar end 1 AM Fri = hour 25).
+  const WINDOW_START_HOUR = 8;   // 8 AM
+  const WINDOW_END_HOUR = 26;    // 2 AM next calendar day
+
+  function renderScheduleGrid(groups) {
+    if (!scheduleGrid) return;
+    if (!groups || groups.length === 0) {
+      scheduleGrid.innerHTML = '<div class="loading">No schedule events.</div>';
+      return;
+    }
+
+    const tz = cfg.calendarTimezone;
+    const hourCount = WINDOW_END_HOUR - WINDOW_START_HOUR;
+
+    // Header row (corner + 4 day headers)
+    let html = `<div class="sg-headers">
+      <div class="sg-corner"></div>`;
+    for (const [key] of groups) {
+      const d = new Date(key + "T12:00:00");
+      const wk = d.toLocaleDateString("en-US", { weekday: "short", timeZone: tz });
+      const dn = d.toLocaleDateString("en-US", { day: "numeric", timeZone: tz });
+      const mo = d.toLocaleDateString("en-US", { month: "short", timeZone: tz });
+      html += `<div class="sg-day-header">
+        <div class="sg-day-weekday">${wk}</div>
+        <div class="sg-day-num">${dn}</div>
+        <div class="sg-day-month">${mo}</div>
+      </div>`;
+    }
+    html += `</div>`;
+
+    // All-day banner row (hotel spans all 4 days)
+    const allDayBanner = groups.flatMap(([, evs]) => evs).find(e => e.type === "allday-hotel");
+    if (allDayBanner) {
+      html += `<div class="sg-allday-row">
+        <div class="sg-allday-gutter">All-day</div>
+        <div class="sg-allday-banner" data-jump="${groups[0][0]}">${escapeHtml(allDayBanner.summary)}</div>
+      </div>`;
+    }
+
+    // Body: hours gutter + 4 day columns
+    html += `<div class="sg-body" style="height: calc(${hourCount} * var(--hour-h));">`;
+    html += `<div class="sg-hours">`;
+    for (let h = WINDOW_START_HOUR; h < WINDOW_END_HOUR; h++) {
+      html += `<div class="sg-hour-label">${formatHourLabel(h)}</div>`;
+    }
+    html += `</div>`;
+
+    for (const [key, dayEvents] of groups) {
+      html += `<div class="sg-col" data-day="${key}">`;
+      for (const e of dayEvents) {
+        const block = positionedEvent(e, key, tz);
+        if (block) html += block;
+      }
+      html += `</div>`;
+    }
+    html += `</div>`;
+
+    scheduleGrid.innerHTML = html;
+
+    // Click handlers — jump to the day's tab in the Itinerary section
+    scheduleGrid.querySelectorAll("[data-jump], .sg-event").forEach(el => {
+      el.addEventListener("click", () => {
+        const day = el.dataset.day || el.dataset.jump;
+        if (!day) return;
+        // Switch the itinerary tab
+        document.querySelectorAll(".day-tab").forEach(b => {
+          const match = b.dataset.day === day;
+          b.classList.toggle("active", match);
+          b.setAttribute("aria-selected", match ? "true" : "false");
+        });
+        document.querySelectorAll(".day-panel").forEach(p => {
+          p.classList.toggle("active", p.dataset.day === day);
+        });
+        history.replaceState(null, "", `#day-${day}`);
+        // Scroll the itinerary into view
+        document.getElementById("itinerary")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }
+
+  function positionedEvent(e, dayKey, tz) {
+    if (e.isAllDay) return null; // rendered as banner
+    if (e.type === "bookend") return null; // arrival window noise
+
+    // Hours-since-window-start (decimal) for top + height
+    const dayStartUtcMs = new Date(dayKey + "T00:00:00-05:00").getTime();
+    const startHour = (e.startDate.getTime() - dayStartUtcMs) / (1000 * 60 * 60);
+    const endHour = (e.endDate.getTime() - dayStartUtcMs) / (1000 * 60 * 60);
+
+    // Clip to window
+    const top = Math.max(startHour, WINDOW_START_HOUR) - WINDOW_START_HOUR;
+    const bottom = Math.min(endHour, WINDOW_END_HOUR) - WINDOW_START_HOUR;
+    if (bottom <= 0 || top >= (WINDOW_END_HOUR - WINDOW_START_HOUR)) return null;
+
+    const heightHours = Math.max(0.5, bottom - top); // minimum 30-min block for visibility
+
+    const title = stripPrefix(e.summary);
+    const timeStr = `${formatTime(e.startDate, tz)} – ${formatTime(e.endDate, tz)}`;
+
+    return `<div class="sg-event t-${e.type}"
+              data-day="${dayKey}"
+              title="${escapeHtml(e.summary)}\n${escapeHtml(timeStr)}${e.location ? '\n📍 ' + escapeHtml(e.location) : ''}"
+              style="top: calc(${top} * var(--hour-h)); height: calc(${heightHours} * var(--hour-h) - 2px);">
+      <div class="sg-event-title">${escapeHtml(title)}</div>
+      <div class="sg-event-time">${escapeHtml(timeStr)}</div>
+    </div>`;
+  }
+
+  function stripPrefix(s) {
+    // "Thursday dinner — Aya La Vida" → "Aya La Vida" if short enough; else keep
+    const parts = s.split(" — ");
+    return parts.length === 2 && parts[1].length <= 30 ? parts[1] : s;
+  }
+
+  function formatHourLabel(h24) {
+    const wrapped = h24 % 24;
+    if (wrapped === 0) return "12 AM";
+    if (wrapped === 12) return "12 PM";
+    if (wrapped > 12) return `${wrapped - 12} PM`;
+    return `${wrapped} AM`;
+  }
+
   loadItinerary()
     .then(normalizeEvents)
     .then(groupByDay)
-    .then(renderTabsAndPanels)
+    .then(groups => {
+      renderTabsAndPanels(groups);
+      renderScheduleGrid(groups);
+    })
     .catch(err => { console.error("Itinerary load failed:", err); renderFallback(err); });
 })();
