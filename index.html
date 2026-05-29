@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duggan Bachelor Party — Panama City</title>
+  <meta name="description" content="Duggan Bachelor Party — Panama City, Jul 16–19, 2026. Itinerary, calendar, flight info.">
+  <meta property="og:title" content="Duggan Bachelor Party — Panama City">
+  <meta property="og:description" content="Jul 16–19, 2026 · JW Marriott Panama">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">LD's last days as a bachelor</p>
+      <h1>Panama City</h1>
+      <p class="hero-dates">Thursday Jul 16 — Sunday Jul 19, 2026</p>
+      <p class="hero-hotel">JW Marriott Panama · Punta Pacifica</p>
+    </div>
+  </header>
+
+  <nav class="actions">
+    <a class="action-btn primary" href="#" id="subscribe-btn">
+      <span class="action-icon">📅</span>
+      <span class="action-label">Subscribe to Calendar</span>
+    </a>
+    <a class="action-btn primary" href="#flights" id="flight-btn">
+      <span class="action-icon">✈️</span>
+      <span class="action-label">Drop Your Flight Info</span>
+    </a>
+    <a class="action-btn secondary" href="#itinerary">
+      <span class="action-icon">📋</span>
+      <span class="action-label">View Itinerary</span>
+    </a>
+  </nav>
+
+  <section class="quick-facts">
+    <div class="fact">
+      <span class="fact-label">Hotel</span>
+      <span class="fact-value"><a href="https://maps.app.goo.gl/?q=JW+Marriott+Panama+Punta+Pacifica" target="_blank" rel="noopener">JW Marriott Panama →</a></span>
+      <span class="fact-sub">Check-in 3pm Thu · Check-out 11am Sun · Breakfast included</span>
+    </div>
+    <div class="fact">
+      <span class="fact-label">Weather</span>
+      <span class="fact-value">Hot</span>
+      <span class="fact-sub">Brief afternoon rain typical</span>
+    </div>
+    <div class="fact">
+      <span class="fact-label">Dress Code</span>
+      <span class="fact-value">Pants + nice shoes</span>
+      <span class="fact-sub">Required at most bars / restaurants for nights</span>
+    </div>
+    <div class="fact">
+      <span class="fact-label">Transport</span>
+      <span class="fact-value">Uber</span>
+      <span class="fact-sub">Throughout the city; party bus TBD</span>
+    </div>
+  </section>
+
+  <section id="itinerary" class="itinerary">
+    <h2 class="section-title">Itinerary</h2>
+    <p class="section-sub">Live from the shared calendar. Subscribe above to get all events on your phone.</p>
+    <div id="itinerary-content">
+      <div class="loading">Loading itinerary…</div>
+    </div>
+  </section>
+
+  <section id="flights" class="flights">
+    <h2 class="section-title">Flights</h2>
+    <p class="section-sub">Drop your flight info so we can coordinate carpools to/from PTY. You'll get a personal edit link to update later.</p>
+
+    <div class="flight-actions">
+      <a class="action-btn primary" id="flight-form-btn" href="#" target="_blank" rel="noopener">
+        <span class="action-icon">➕</span>
+        <span class="action-label">Add / Update Your Flight</span>
+      </a>
+      <a class="action-btn secondary" id="flight-sheet-btn" href="#" target="_blank" rel="noopener">
+        <span class="action-icon">↗</span>
+        <span class="action-label">Open Full Sheet</span>
+      </a>
+    </div>
+
+    <div class="flight-sheet-wrap">
+      <iframe id="flight-sheet-embed" title="Flight responses" frameborder="0" loading="lazy"></iframe>
+    </div>
+    <p class="flight-fallback" id="flight-fallback" hidden>
+      Flight sheet not yet connected. Use the form above for now.
+    </p>
+  </section>
+
+  <footer class="site-footer">
+    <p>Built for LD's bachelor by the boys. Questions: <a href="mailto:gemensing@gmail.com">George</a> · <a href="mailto:laurenceduggan@gmail.com">Laurence</a></p>
+    <p class="footer-sub">Calendar &amp; data: <a href="" id="calendar-public-link" target="_blank" rel="noopener">Google Calendar</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
