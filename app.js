@@ -132,7 +132,7 @@
   (function wireOptinCountdown() {
     const el = document.getElementById("optin-countdown");
     if (!el) return;
-    const deadline = new Date("2026-07-15T23:59:59-05:00"); // Wed Jul 15 EOD Panama
+    const deadline = new Date("2026-07-02T23:59:59-05:00"); // Thu Jul 2 EOD Panama (2 weeks before trip)
     const now = new Date();
     const msDay = 1000 * 60 * 60 * 24;
     const diffDays = Math.ceil((deadline - now) / msDay);
@@ -140,13 +140,13 @@
       el.textContent = "Deadline passed";
       el.classList.add("passed");
     } else if (diffDays === 0) {
-      el.textContent = "Last day! Wed Jul 15";
+      el.textContent = "Last day! Thu Jul 2";
       el.classList.add("urgent");
     } else if (diffDays <= 7) {
-      el.textContent = `${diffDays} days left · by Wed Jul 15`;
+      el.textContent = `${diffDays} days left · by Thu Jul 2`;
       el.classList.add("urgent");
     } else {
-      el.textContent = `${diffDays} days left · by Wed Jul 15`;
+      el.textContent = `${diffDays} days left · by Thu Jul 2`;
     }
   })();
 
