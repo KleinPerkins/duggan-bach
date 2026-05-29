@@ -8,9 +8,32 @@
   <meta property="og:title" content="Duggan Bachelor Party — Panama City">
   <meta property="og:description" content="Jul 16–19, 2026 · JW Marriott Panama">
   <meta property="og:type" content="website">
-  <link rel="stylesheet" href="styles.css?v=1780040721">
+  <link rel="stylesheet" href="styles.css?v=1780041127">
+  <link rel="preload" as="image" href="assets/intro-hype.png">
 </head>
 <body>
+  <!-- ======================================================================
+       HYPE INTRO — 5-second animation; auto-dismisses, skippable
+       ====================================================================== -->
+  <div id="intro" class="intro" aria-hidden="false" role="dialog" aria-label="Bachelor party intro">
+    <div class="intro-bg" style="background-image: url('assets/intro-hype.png');"></div>
+    <div class="intro-vignette"></div>
+    <div class="intro-flash"></div>
+
+    <button class="intro-skip" id="intro-skip" type="button" aria-label="Skip intro">
+      Skip <span aria-hidden="true">→</span>
+    </button>
+
+    <div class="intro-content">
+      <p class="intro-eyebrow">LD'S BACHELOR PARTY</p>
+      <h1 class="intro-title">PANAMA CITY</h1>
+      <p class="intro-dates">JULY 16 – 19, 2026</p>
+      <div class="intro-enter" id="intro-enter">
+        ENTER <span aria-hidden="true">→</span>
+      </div>
+    </div>
+  </div>
+
   <header class="hero">
     <div class="hero-overlay"></div>
     <div class="hero-content">
@@ -145,9 +168,52 @@
   </footer>
 
   <script>
-    window.__BUILD_VERSION = "1780040721";
+    window.__BUILD_VERSION = "1780041127";
+
+    // ── Hype intro controller ────────────────────────────────────────────
+    (function () {
+      const intro = document.getElementById("intro");
+      if (!intro) return;
+      const skipBtn = document.getElementById("intro-skip");
+      const enterBtn = document.getElementById("intro-enter");
+      const INTRO_DURATION_MS = 5000;
+
+      // Suppress on same-session re-renders (refresh, hash nav, etc.)
+      // so people don't sit through it twice in one sitting.
+      try {
+        if (sessionStorage.getItem("introSeen") === "1") {
+          intro.remove();
+          return;
+        }
+      } catch (e) { /* sessionStorage may be blocked in some contexts */ }
+
+      // Honor the OS-level reduced-motion preference: show static splash,
+      // require an explicit Enter click (no auto-dismiss).
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function dismiss() {
+        if (intro.classList.contains("intro-dismissed")) return;
+        intro.classList.add("intro-dismissed");
+        try { sessionStorage.setItem("introSeen", "1"); } catch (e) {}
+        setTimeout(() => intro.remove(), 600);
+      }
+
+      skipBtn?.addEventListener("click", (e) => { e.stopPropagation(); dismiss(); });
+      enterBtn?.addEventListener("click", (e) => { e.stopPropagation(); dismiss(); });
+      // Click anywhere on the intro (after 0.5s) also dismisses
+      setTimeout(() => intro.addEventListener("click", dismiss), 500);
+      // Esc key dismisses
+      document.addEventListener("keydown", function onEsc(e) {
+        if (e.key === "Escape") { dismiss(); document.removeEventListener("keydown", onEsc); }
+      });
+
+      if (!reduceMotion) {
+        // Auto-dismiss at end of animation timeline
+        setTimeout(dismiss, INTRO_DURATION_MS);
+      }
+    })();
   </script>
-  <script src="config.js?v=1780040721"></script>
-  <script src="app.js?v=1780040721"></script>
+  <script src="config.js?v=1780041127"></script>
+  <script src="app.js?v=1780041127"></script>
 </body>
 </html>
