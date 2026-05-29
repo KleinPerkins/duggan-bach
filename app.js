@@ -1,65 +1,279 @@
 /**
  * Duggan Bachelor Party site — runtime.
  *
- * Responsibilities:
- *  1. Load static itinerary.json (shipped with site), render day-by-day cards.
- *     (Originally pulled ICS from Google Calendar at load, but Google's CORS
- *     policy blocks browser fetches and public proxies are unreliable. We ship
- *     the itinerary as static data instead. Re-deploy the site to publish
- *     itinerary changes; deploy.sh handles that.)
- *  2. Wire up the subscribe button, flight form button, sheet embed.
- *  3. Graceful fallback if itinerary.json fails (show calendar embed instead).
+ * Features:
+ *  1. Load static itinerary.json + render TABBED by day.
+ *  2. Live weather (Open-Meteo, no API key, CORS-friendly).
+ *  3. Embed 4-day Google Calendar widget scoped to Jul 16-19.
+ *  4. Opt-in section: deadline countdown + button + live tallies from
+ *     the responses sheet via Google's gviz/tq endpoint (CORS-friendly).
+ *  5. Flights section: form button + sheet embed.
  */
-
 (function () {
   "use strict";
 
   const cfg = window.SITE_CONFIG;
-  if (!cfg) {
-    console.error("SITE_CONFIG missing");
-    return;
+  if (!cfg) { console.error("SITE_CONFIG missing"); return; }
+
+  // ===================================================================
+  // Action buttons (static wiring)
+  // ===================================================================
+  function setHref(id, url, opts = {}) {
+    const el = document.getElementById(id);
+    if (!el || !url) return;
+    el.href = url;
+    if (opts.newTab) { el.target = "_blank"; el.rel = "noopener"; }
   }
 
-  // ── Wire static action buttons ────────────────────────────────────────
-  const subscribeBtn = document.getElementById("subscribe-btn");
-  if (subscribeBtn) {
-    subscribeBtn.href = cfg.calendarSubscribeUrl;
-    subscribeBtn.target = "_blank";
-    subscribeBtn.rel = "noopener";
-  }
+  setHref("subscribe-btn", cfg.calendarSubscribeUrl, { newTab: true });
+  setHref("flight-form-btn", cfg.flightFormUrl, { newTab: true });
+  setHref("optin-form-btn", cfg.optinFormUrl, { newTab: true });
+  setHref("calendar-public-link", cfg.calendarEmbedUrl, { newTab: true });
 
-  const flightFormBtn = document.getElementById("flight-form-btn");
-  if (flightFormBtn) flightFormBtn.href = cfg.flightFormUrl;
-
-  const flightSheetBtn = document.getElementById("flight-sheet-btn");
-  const flightSheetEmbed = document.getElementById("flight-sheet-embed");
-  const flightFallback = document.getElementById("flight-fallback");
-
-  if (cfg.flightSheetEmbedUrl) {
-    flightSheetEmbed.src = cfg.flightSheetEmbedUrl;
-    if (flightSheetBtn && cfg.flightSheetViewUrl) {
-      flightSheetBtn.href = cfg.flightSheetViewUrl;
-    } else if (flightSheetBtn) {
-      flightSheetBtn.style.display = "none";
+  // ===================================================================
+  // Flight sheet embed + view button
+  // ===================================================================
+  (function wireFlights() {
+    const embed = document.getElementById("flight-sheet-embed");
+    const btn = document.getElementById("flight-sheet-btn");
+    const fallback = document.getElementById("flight-fallback");
+    if (cfg.flightSheetEmbedUrl) {
+      embed.src = cfg.flightSheetEmbedUrl;
+      if (btn && cfg.flightSheetViewUrl) {
+        btn.href = cfg.flightSheetViewUrl;
+        btn.target = "_blank";
+        btn.rel = "noopener";
+      } else if (btn) btn.style.display = "none";
+    } else {
+      embed.style.display = "none";
+      if (fallback) fallback.hidden = false;
+      if (btn) btn.style.display = "none";
     }
-  } else {
-    flightSheetEmbed.style.display = "none";
-    if (flightFallback) flightFallback.hidden = false;
-    if (flightSheetBtn) flightSheetBtn.style.display = "none";
+  })();
+
+  // ===================================================================
+  // 4-day calendar widget
+  // ===================================================================
+  (function wireCalendarWidget() {
+    const frame = document.getElementById("calendar-widget-frame");
+    if (!frame || !cfg.calendarId) return;
+    const params = new URLSearchParams({
+      src: cfg.calendarId,
+      ctz: cfg.calendarTimezone,
+      mode: "WEEK",
+      dates: "20260716/20260720", // end-exclusive: covers Thu Jul 16 through Sun Jul 19
+      showTitle: "0",
+      showNav: "1",
+      showDate: "1",
+      showPrint: "0",
+      showTabs: "0",
+      showCalendars: "0",
+      showTz: "0",
+      hl: "en",
+      bgcolor: "%23ffffff",
+    });
+    frame.src = `https://calendar.google.com/calendar/embed?${params.toString()}`;
+  })();
+
+  // ===================================================================
+  // Weather (Open-Meteo)
+  // ===================================================================
+  (async function loadWeather() {
+    const valueEl = document.getElementById("weather-value");
+    const subEl = document.getElementById("weather-sub");
+    if (!valueEl || !subEl) return;
+
+    // Panama City coords
+    const lat = 8.9824, lon = -79.5199;
+    const start = "2026-07-16", end = "2026-07-19";
+
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+        `&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code` +
+        `&timezone=America/Panama&start_date=${start}&end_date=${end}` +
+        `&temperature_unit=fahrenheit`;
+      const resp = await fetch(url, { cache: "no-store" });
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      const data = await resp.json();
+      const d = data.daily;
+      if (!d || !d.time || d.time.length === 0) throw new Error("no forecast data");
+
+      // Average max temp + worst precip prob across the 4 days
+      const maxTemps = d.temperature_2m_max;
+      const minTemps = d.temperature_2m_min;
+      const precips = d.precipitation_probability_max;
+      const avgMax = Math.round(maxTemps.reduce((a,b) => a+b, 0) / maxTemps.length);
+      const avgMin = Math.round(minTemps.reduce((a,b) => a+b, 0) / minTemps.length);
+      const maxRain = Math.max(...precips);
+
+      valueEl.textContent = `${avgMax}° / ${avgMin}°F`;
+      subEl.textContent = `4-day avg · ${maxRain}% rain on worst day · live forecast`;
+    } catch (err) {
+      console.warn("weather load failed:", err);
+      // Fallback to typical July climatology for Panama City
+      valueEl.textContent = "~87° / 76°F";
+      subEl.textContent = "Typical July · brief afternoon rain";
+    }
+  })();
+
+  // ===================================================================
+  // Opt-in countdown + tallies
+  // ===================================================================
+  (function wireOptinCountdown() {
+    const el = document.getElementById("optin-countdown");
+    if (!el) return;
+    const deadline = new Date("2026-07-15T23:59:59-05:00"); // Wed Jul 15 EOD Panama
+    const now = new Date();
+    const msDay = 1000 * 60 * 60 * 24;
+    const diffDays = Math.ceil((deadline - now) / msDay);
+    if (diffDays < 0) {
+      el.textContent = "Deadline passed";
+      el.classList.add("passed");
+    } else if (diffDays === 0) {
+      el.textContent = "Last day! Wed Jul 15";
+      el.classList.add("urgent");
+    } else if (diffDays <= 7) {
+      el.textContent = `${diffDays} days left · by Wed Jul 15`;
+      el.classList.add("urgent");
+    } else {
+      el.textContent = `${diffDays} days left · by Wed Jul 15`;
+    }
+  })();
+
+  (async function loadOptinTallies() {
+    const container = document.getElementById("optin-tallies");
+    if (!container) return;
+    if (!cfg.optinSheetId || !cfg.optinSheetGid) {
+      container.innerHTML = `<div class="optin-tally-empty">Tallies will appear here once the opt-in sheet is connected. Use the button above to submit your picks.</div>`;
+      return;
+    }
+
+    try {
+      const rows = await fetchSheetRows(cfg.optinSheetId, cfg.optinSheetGid);
+      if (!rows || rows.length === 0) {
+        container.innerHTML = `<div class="optin-tally-empty">No opt-ins yet. Be the first — hit "Submit Your Opt-Ins" above.</div>`;
+        return;
+      }
+      container.innerHTML = renderTallies(rows);
+    } catch (err) {
+      console.warn("opt-in tally load failed:", err);
+      container.innerHTML = `<div class="optin-tally-empty">Couldn't load live tallies (${escapeHtml(err.message || "unknown")}). Submit your picks via the button above.</div>`;
+    }
+  })();
+
+  /**
+   * Fetch the linked Google Sheet via gviz/tq endpoint, which sends CORS
+   * headers for anyone-with-link sheets. Returns array of row objects keyed
+   * by header label. First row treated as headers.
+   */
+  async function fetchSheetRows(sheetId, gid) {
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&gid=${gid}`;
+    const resp = await fetch(url, { cache: "no-store" });
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    const text = await resp.text();
+    // gviz wraps JSON in `google.visualization.Query.setResponse(...)` — strip it
+    const m = text.match(/setResponse\(([\s\S]*)\);?\s*$/);
+    if (!m) throw new Error("malformed gviz response");
+    const data = JSON.parse(m[1]);
+    if (data.status === "error") throw new Error(data.errors?.[0]?.detailed_message || "gviz error");
+    const cols = data.table.cols.map(c => c.label || c.id || "");
+    const rows = data.table.rows.map(r => {
+      const obj = {};
+      r.c.forEach((cell, i) => {
+        obj[cols[i]] = cell ? (cell.f || cell.v) : null;
+      });
+      return obj;
+    });
+    return rows;
   }
 
-  const calendarPublicLink = document.getElementById("calendar-public-link");
-  if (calendarPublicLink) calendarPublicLink.href = cfg.calendarEmbedUrl;
+  function renderTallies(rows) {
+    // Map sheet header labels to canonical short labels for the UI.
+    // Headers will vary in spelling once you re-link — be tolerant.
+    const findCol = (rows, partials) => {
+      if (rows.length === 0) return null;
+      for (const key of Object.keys(rows[0])) {
+        const lk = key.toLowerCase();
+        if (partials.every(p => lk.includes(p.toLowerCase()))) return key;
+      }
+      return null;
+    };
 
-  // ── Load + render itinerary ───────────────────────────────────────────
+    const satCol = findCol(rows, ["saturday", "track"]) || findCol(rows, ["sat", "daytime"]);
+    const friCol = findCol(rows, ["friday", "dinner"]);
+    const thuCol = findCol(rows, ["thursday", "late"]);
+    const friLateCol = findCol(rows, ["friday", "late"]);
+
+    const totalResponses = rows.length;
+    let html = `<div class="optin-tally-card">
+      <h4>Responses</h4>
+      <div class="optin-tally-row"><span class="optin-tally-label">Total submitted</span><span class="optin-tally-count">${totalResponses}</span></div>
+    </div>`;
+
+    html += renderTallyCard("Saturday daytime", rows, satCol, {
+      "Track A": ["track a", "locks"],
+      "Track B": ["track b", "shooting"],
+      "Track C": ["track c", "golf"],
+      "Undecided": ["undecided"],
+      "Hotel": ["sleeping", "chill", "hotel"],
+    });
+    html += renderTallyCard("Friday dinner", rows, friCol, {
+      "A · La Barbara": ["option a", "barbara"],
+      "B · Fish market": ["option b", "fish", "mercado"],
+      "C · Tacos": ["option c", "tacos", "cholula"],
+      "Undecided": ["undecided"],
+      "Skipping": ["skip"],
+    });
+    html += renderTallyCard("Thu late-night", rows, thuCol, {
+      "Yes": ["yes"],
+      "No": ["no"],
+      "Maybe": ["maybe"],
+    });
+    html += renderTallyCard("Fri late-night", rows, friLateCol, {
+      "Yes": ["yes"],
+      "No": ["no"],
+      "Maybe": ["maybe"],
+    });
+    return html;
+  }
+
+  function renderTallyCard(title, rows, columnKey, buckets) {
+    if (!columnKey) {
+      return `<div class="optin-tally-card"><h4>${escapeHtml(title)}</h4><div class="optin-tally-empty" style="padding:8px 0">Column not found in sheet yet</div></div>`;
+    }
+    const counts = {};
+    for (const label of Object.keys(buckets)) counts[label] = 0;
+    counts["(other)"] = 0;
+    for (const row of rows) {
+      const val = (row[columnKey] || "").toString().toLowerCase().trim();
+      if (!val) continue;
+      let matched = false;
+      for (const [label, partials] of Object.entries(buckets)) {
+        if (partials.some(p => val.includes(p.toLowerCase()))) {
+          counts[label]++;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) counts["(other)"]++;
+    }
+    const rowsHtml = Object.entries(counts)
+      .filter(([label, c]) => c > 0 || label !== "(other)")
+      .map(([label, c]) =>
+        `<div class="optin-tally-row"><span class="optin-tally-label">${escapeHtml(label)}</span><span class="optin-tally-count">${c}</span></div>`
+      ).join("");
+    return `<div class="optin-tally-card"><h4>${escapeHtml(title)}</h4>${rowsHtml || '<div class="optin-tally-empty" style="padding:8px 0">No responses yet</div>'}</div>`;
+  }
+
+  // ===================================================================
+  // Itinerary (tabbed by day)
+  // ===================================================================
   const container = document.getElementById("itinerary-content");
+  const tabsContainer = document.getElementById("day-tabs");
 
   function loadItinerary() {
     return fetch("itinerary.json", { cache: "no-store" })
-      .then(r => {
-        if (!r.ok) throw new Error("HTTP " + r.status);
-        return r.json();
-      });
+      .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
   }
 
   function normalizeEvents(raw) {
@@ -67,10 +281,10 @@
       const isAllDay = ev.type === "allday-hotel";
       const startDate = isAllDay
         ? new Date(ev.start_date + "T00:00:00")
-        : parseLocalDateTime(ev.start, raw._meta.timezone);
+        : parseLocalDateTime(ev.start);
       const endDate = isAllDay
         ? new Date(ev.end_date + "T00:00:00")
-        : parseLocalDateTime(ev.end, raw._meta.timezone);
+        : parseLocalDateTime(ev.end);
       return {
         id: ev.id,
         summary: ev.summary,
@@ -84,51 +298,35 @@
     });
   }
 
-  // Parse "2026-07-16T19:00:00" as a local-time-in-Panama wall-clock value.
-  // We can render this directly with toLocaleString({timeZone: ...}) and avoid
-  // user-timezone drift because the rendered string is what the user reads.
-  // For simplicity we store as a Date assuming the timestamp is already in the
-  // target timezone and use timeZone:Panama for all formatting.
-  function parseLocalDateTime(s, tz) {
-    // Treat the ISO-without-zone as Panama-local. We construct a UTC-equivalent
-    // Date and then always format with timeZone:Panama, so the displayed value
-    // matches what's in itinerary.json regardless of the viewer's locale.
-    return new Date(s + "-05:00"); // Panama is UTC-5 year-round, no DST.
+  function parseLocalDateTime(s) {
+    // Panama is UTC-5 year-round (no DST). Treating timestamps in itinerary.json
+    // as Panama-local.
+    return new Date(s + "-05:00");
   }
 
   function groupByDay(events) {
     events.sort((a, b) => a.startDate - b.startDate);
+    const tz = cfg.calendarTimezone;
     const groups = new Map();
     for (const e of events) {
-      // Day key in Panama time
-      const tz = cfg.calendarTimezone;
-      const key = formatDayKey(e.startDate, tz);
+      const key = e.startDate.toLocaleDateString("en-CA", { timeZone: tz });
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(e);
     }
     return [...groups.entries()].sort();
   }
 
-  function formatDayKey(date, tz) {
-    return date.toLocaleDateString("en-CA", { timeZone: tz });
-  }
-
-  function formatDayHeader(key, tz) {
+  function formatDayShort(key, tz) {
     const d = new Date(key + "T12:00:00");
-    return d.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "short",
-      day: "numeric",
-      timeZone: tz,
-    });
+    return d.toLocaleDateString("en-US", { weekday: "short", timeZone: tz });
   }
-
+  function formatDayMonth(key, tz) {
+    const d = new Date(key + "T12:00:00");
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: tz });
+  }
   function formatTime(date, tz) {
     return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: tz,
+      hour: "numeric", minute: "2-digit", hour12: true, timeZone: tz,
     });
   }
 
@@ -143,76 +341,78 @@
       "bookend": "",
     };
     const tag = tagMap[e.type] || "";
-
-    let timeHtml;
-    if (e.isAllDay) {
-      timeHtml = '<div class="event-time all-day">All day</div>';
-    } else {
-      timeHtml = `<div class="event-time"><span class="start">${formatTime(e.startDate, tz)}</span><span class="end">${formatTime(e.endDate, tz)}</span></div>`;
-    }
-
+    const timeHtml = e.isAllDay
+      ? '<div class="event-time all-day">All day</div>'
+      : `<div class="event-time"><span class="start">${formatTime(e.startDate, tz)}</span><span class="end">${formatTime(e.endDate, tz)}</span></div>`;
     const locHtml = e.location ? `<div class="event-location">${escapeHtml(e.location)}</div>` : "";
     const descHtml = e.description ? `<div class="event-desc">${linkify(escapeHtml(e.description))}</div>` : "";
-
-    return `
-      <div class="event-card type-${e.type}">
-        ${timeHtml}
-        <div class="event-body">
-          <div class="event-title">${tag}${escapeHtml(e.summary)}</div>
-          ${locHtml}
-          ${descHtml}
-        </div>
-      </div>
-    `;
+    return `<div class="event-card type-${e.type}">${timeHtml}<div class="event-body"><div class="event-title">${tag}${escapeHtml(e.summary)}</div>${locHtml}${descHtml}</div></div>`;
   }
 
   function escapeHtml(s) {
     return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
-
   function linkify(s) {
     return s.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
   }
 
-  function render(events) {
-    if (events.length === 0) {
-      container.innerHTML = '<div class="loading">No events found in the calendar.</div>';
+  function renderTabsAndPanels(groups) {
+    const tz = cfg.calendarTimezone;
+    if (groups.length === 0) {
+      container.innerHTML = '<div class="loading">No events found.</div>';
+      tabsContainer.innerHTML = "";
       return;
     }
-    const groups = groupByDay(events);
-    let html = "";
-    for (const [key, dayEvents] of groups) {
-      html += `<div class="day-group">
-        <h3 class="day-header">${formatDayHeader(key, cfg.calendarTimezone)}<span class="day-header-date">${key}</span></h3>
+
+    // Initial active tab: from URL hash (#day-2026-07-16) if matches; else first.
+    const hashMatch = (window.location.hash || "").match(/day-(\d{4}-\d{2}-\d{2})/);
+    const hashKey = hashMatch ? hashMatch[1] : null;
+    const activeKey = (hashKey && groups.find(([k]) => k === hashKey)) ? hashKey : groups[0][0];
+
+    tabsContainer.innerHTML = groups.map(([key]) => {
+      const isActive = key === activeKey;
+      return `<button class="day-tab ${isActive ? "active" : ""}" data-day="${key}" role="tab" aria-selected="${isActive}">
+        ${formatDayShort(key, tz)}<span class="day-tab-date">${formatDayMonth(key, tz)}</span>
+      </button>`;
+    }).join("");
+
+    container.innerHTML = groups.map(([key, dayEvents]) => {
+      const isActive = key === activeKey;
+      return `<div class="day-panel ${isActive ? "active" : ""}" data-day="${key}" role="tabpanel">
         ${dayEvents.map(renderEvent).join("")}
       </div>`;
-    }
-    container.innerHTML = html;
+    }).join("");
+
+    // Tab switching
+    tabsContainer.querySelectorAll(".day-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.day;
+        tabsContainer.querySelectorAll(".day-tab").forEach(b => {
+          b.classList.toggle("active", b.dataset.day === key);
+          b.setAttribute("aria-selected", b.dataset.day === key ? "true" : "false");
+        });
+        container.querySelectorAll(".day-panel").forEach(p => {
+          p.classList.toggle("active", p.dataset.day === key);
+        });
+        // Update URL hash without scrolling
+        history.replaceState(null, "", `#day-${key}`);
+      });
+    });
   }
 
   function renderFallback(err) {
-    container.innerHTML = `
-      <div class="day-group">
-        <p style="color: var(--color-text-muted); margin-bottom: 16px; font-size: 14px;">
-          Couldn't load the live itinerary from the calendar (${escapeHtml(err.message || "unknown error")}).
-          View it directly:
-        </p>
-        <iframe src="${cfg.calendarEmbedUrl}" style="width:100%; height:600px; border:0; border-radius:12px;" loading="lazy"></iframe>
-      </div>
-    `;
+    container.innerHTML = `<p style="color: var(--color-text-muted); margin-bottom: 16px; font-size: 14px;">
+      Couldn't load the itinerary (${escapeHtml(err.message || "unknown")}). View it directly:
+    </p>
+    <iframe src="${cfg.calendarEmbedUrl}" style="width:100%; height:600px; border:0; border-radius:12px;" loading="lazy"></iframe>`;
+    tabsContainer.innerHTML = "";
   }
 
-  // ── Boot ──────────────────────────────────────────────────────────────
   loadItinerary()
     .then(normalizeEvents)
-    .then(render)
-    .catch(err => {
-      console.error("Itinerary load failed:", err);
-      renderFallback(err);
-    });
+    .then(groupByDay)
+    .then(renderTabsAndPanels)
+    .catch(err => { console.error("Itinerary load failed:", err); renderFallback(err); });
 })();

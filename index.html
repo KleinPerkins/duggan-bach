@@ -8,7 +8,7 @@
   <meta property="og:title" content="Duggan Bachelor Party — Panama City">
   <meta property="og:description" content="Jul 16–19, 2026 · JW Marriott Panama">
   <meta property="og:type" content="website">
-  <link rel="stylesheet" href="styles.css?v=1780024195">
+  <link rel="stylesheet" href="styles.css?v=1780024826">
 </head>
 <body>
   <header class="hero">
@@ -22,6 +22,10 @@
   </header>
 
   <nav class="actions">
+    <a class="action-btn primary" href="#optin" id="optin-hero-btn">
+      <span class="action-icon">🎯</span>
+      <span class="action-label">Lock Your Picks</span>
+    </a>
     <a class="action-btn primary" href="#" id="subscribe-btn">
       <span class="action-icon">📅</span>
       <span class="action-label">Subscribe to Calendar</span>
@@ -29,10 +33,6 @@
     <a class="action-btn primary" href="#flights" id="flight-btn">
       <span class="action-icon">✈️</span>
       <span class="action-label">Drop Your Flight Info</span>
-    </a>
-    <a class="action-btn secondary" href="#itinerary">
-      <span class="action-icon">📋</span>
-      <span class="action-label">View Itinerary</span>
     </a>
   </nav>
 
@@ -42,10 +42,10 @@
       <span class="fact-value"><a href="https://maps.app.goo.gl/?q=JW+Marriott+Panama+Punta+Pacifica" target="_blank" rel="noopener">JW Marriott Panama →</a></span>
       <span class="fact-sub">Check-in 3pm Thu · Check-out 11am Sun · Breakfast included</span>
     </div>
-    <div class="fact">
-      <span class="fact-label">Weather</span>
-      <span class="fact-value">Hot</span>
-      <span class="fact-sub">Brief afternoon rain typical</span>
+    <div class="fact" id="weather-card">
+      <span class="fact-label">Weather (Jul 16–19)</span>
+      <span class="fact-value" id="weather-value">Loading…</span>
+      <span class="fact-sub" id="weather-sub"></span>
     </div>
     <div class="fact">
       <span class="fact-label">Dress Code</span>
@@ -59,14 +59,61 @@
     </div>
   </section>
 
+  <!-- ======================================================================
+       OPT-IN — front and center
+       ====================================================================== -->
+  <section id="optin" class="optin">
+    <div class="optin-header">
+      <h2 class="section-title">Lock Your Picks</h2>
+      <div class="optin-deadline" id="optin-countdown">Loading deadline…</div>
+    </div>
+    <p class="section-sub">
+      Bookings (tee times, La Barbara reservation, tactical range) depend on these counts.
+      Submit by <strong>Wed Jul 15</strong>. You can update anytime via your edit link.
+    </p>
+
+    <div class="optin-actions">
+      <a class="action-btn primary action-btn-lg" id="optin-form-btn" href="#" target="_blank" rel="noopener">
+        <span class="action-icon">🎯</span>
+        <span class="action-label">Submit Your Opt-Ins</span>
+      </a>
+    </div>
+
+    <div class="optin-tallies" id="optin-tallies">
+      <div class="loading">Loading current opt-ins…</div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       4-DAY CALENDAR WIDGET
+       ====================================================================== -->
+  <section id="calendar-widget" class="calendar-widget">
+    <h2 class="section-title">4-Day Schedule</h2>
+    <p class="section-sub">Interactive view. Click any event for details. Tap "Subscribe to Calendar" above to add to your phone.</p>
+    <div class="calendar-widget-wrap">
+      <iframe id="calendar-widget-frame" title="4-day schedule" frameborder="0" loading="lazy"></iframe>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       ITINERARY (tabbed by day)
+       ====================================================================== -->
   <section id="itinerary" class="itinerary">
     <h2 class="section-title">Itinerary</h2>
-    <p class="section-sub">Tap "Subscribe to Calendar" above to get all events on your phone.</p>
+    <p class="section-sub">Day-by-day, every event. <span class="legend-key"><span class="dot dot-locked"></span>Locked</span> <span class="legend-key"><span class="dot dot-optin"></span>Opt-in</span> <span class="legend-key"><span class="dot dot-travel"></span>Travel</span> <span class="legend-key"><span class="dot dot-hotel"></span>Hotel</span></p>
+
+    <div class="day-tabs" role="tablist" id="day-tabs">
+      <div class="loading">Loading days…</div>
+    </div>
+
     <div id="itinerary-content">
       <div class="loading">Loading itinerary…</div>
     </div>
   </section>
 
+  <!-- ======================================================================
+       FLIGHTS
+       ====================================================================== -->
   <section id="flights" class="flights">
     <h2 class="section-title">Flights</h2>
     <p class="section-sub">Drop your flight info so we can coordinate carpools to/from PTY. You'll get a personal edit link to update later.</p>
@@ -96,12 +143,9 @@
   </footer>
 
   <script>
-    // Cache-bust both script + style assets per deploy. Value is the file's
-    // current epoch second on the build machine; assets ship with the same
-    // value baked in via deploy_site.sh's sed pass.
-    window.__BUILD_VERSION = "1780024195";
+    window.__BUILD_VERSION = "1780024826";
   </script>
-  <script src="config.js?v=1780024195"></script>
-  <script src="app.js?v=1780024195"></script>
+  <script src="config.js?v=1780024826"></script>
+  <script src="app.js?v=1780024826"></script>
 </body>
 </html>

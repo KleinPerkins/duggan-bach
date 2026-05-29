@@ -169,32 +169,180 @@ a:hover { text-decoration: underline; }
   margin-bottom: 24px;
 }
 
-.itinerary, .flights {
+.itinerary, .flights, .optin, .calendar-widget {
   max-width: var(--max-width);
   margin: 0 auto 64px;
   padding: 0 16px;
 }
 
+/* --- Action button size variant --- */
+.action-btn-lg {
+  padding: 18px 24px;
+  font-size: 17px;
+}
+
+/* --- OPT-IN section --- */
+.optin {
+  background: linear-gradient(135deg, rgba(255,120,73,0.08) 0%, rgba(251,191,36,0.05) 100%);
+  border: 1px solid rgba(255,120,73,0.25);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  margin: 0 auto 64px;
+  /* The above margin overrides the max-width parent rule's last value via the longer selector */
+}
+.optin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.optin-header .section-title { margin-bottom: 0; }
+.optin-deadline {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(255,120,73,0.2);
+  color: var(--color-accent-2);
+  white-space: nowrap;
+}
+.optin-deadline.urgent { background: rgba(239, 68, 68, 0.25); color: #fca5a5; }
+.optin-deadline.passed { background: rgba(107, 114, 128, 0.2); color: var(--color-text-muted); }
+
+.optin-actions {
+  margin: 20px 0 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.optin-tallies {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+.optin-tally-card {
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  padding: 14px 16px;
+}
+.optin-tally-card h4 {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
+.optin-tally-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 4px 0;
+  font-size: 14px;
+  color: var(--color-text);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.optin-tally-row:last-child { border-bottom: 0; }
+.optin-tally-label { flex: 1; min-width: 0; padding-right: 8px; }
+.optin-tally-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--color-accent-2);
+  font-size: 16px;
+  min-width: 28px;
+  text-align: right;
+}
+.optin-tally-empty {
+  font-size: 13px;
+  color: var(--color-text-dim);
+  padding: 20px 0;
+  text-align: center;
+}
+
+/* --- 4-day calendar widget --- */
+.calendar-widget-wrap {
+  background: white;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+#calendar-widget-frame {
+  width: 100%;
+  height: 600px;
+  border: 0;
+  display: block;
+}
+
+/* --- Itinerary tabs --- */
+.legend-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 12px;
+  font-size: 12px;
+}
+.legend-key .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.legend-key .dot-locked { background: var(--color-locked); }
+.legend-key .dot-optin { background: var(--color-optin); }
+.legend-key .dot-travel { background: var(--color-travel); }
+.legend-key .dot-hotel { background: var(--color-hotel); }
+
+.day-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.day-tab {
+  background: transparent;
+  border: 0;
+  color: var(--color-text-muted);
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+.day-tab:hover { color: var(--color-text); }
+.day-tab.active {
+  color: var(--color-accent-2);
+  border-bottom-color: var(--color-accent);
+}
+.day-tab-date {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-dim);
+  margin-top: 2px;
+}
+.day-tab.active .day-tab-date { color: var(--color-text-muted); }
+
+.day-panel { display: none; }
+.day-panel.active { display: block; }
+
 /* --- Itinerary day cards --- */
 .loading { color: var(--color-text-muted); padding: 32px 0; text-align: center; }
 
 .day-group {
-  margin-bottom: 32px;
-}
-.day-header {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--color-accent);
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-.day-header-date {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  font-weight: 500;
+  margin-bottom: 8px;
 }
 
 .event-card {
