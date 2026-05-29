@@ -163,7 +163,7 @@
     },
     {
       "id": "fri-late-optin",
-      "summary": "[OPT-IN] Friday late-night — club / burlesque add-on",
+      "summary": "Friday late-night — club / burlesque add-on",
       "type": "optin",
       "start": "2026-07-18T00:30:00",
       "end": "2026-07-18T02:30:00",
@@ -173,7 +173,7 @@
     },
     {
       "id": "sat-track-A-depart",
-      "summary": "[TRACK A] Depart JW → Miraflores Locks",
+      "summary": "Depart JW → Miraflores Locks (Track A)",
       "type": "travel-optin",
       "start": "2026-07-18T08:30:00",
       "end": "2026-07-18T09:30:00",
@@ -183,7 +183,7 @@
     },
     {
       "id": "sat-track-A-locks",
-      "summary": "[TRACK A] Panama Canal — Miraflores Locks tour",
+      "summary": "Panama Canal — Miraflores Locks tour (Track A)",
       "type": "optin",
       "start": "2026-07-18T09:30:00",
       "end": "2026-07-18T12:30:00",
@@ -193,7 +193,7 @@
     },
     {
       "id": "sat-track-B-depart",
-      "summary": "[TRACK B] Depart JW → Tactical shooting range",
+      "summary": "Depart JW → Tactical shooting range (Track B)",
       "type": "travel-optin",
       "start": "2026-07-18T08:30:00",
       "end": "2026-07-18T09:30:00",
@@ -203,7 +203,7 @@
     },
     {
       "id": "sat-track-B-shooting",
-      "summary": "[TRACK B] Tactical shooting",
+      "summary": "Tactical shooting at Top Gun Panamá (Track B)",
       "type": "optin",
       "start": "2026-07-18T09:30:00",
       "end": "2026-07-18T12:30:00",
@@ -223,7 +223,7 @@
     },
     {
       "id": "sat-track-C-depart",
-      "summary": "[TRACK C] Depart JW → Golf course",
+      "summary": "Depart JW → Golf course (Track C)",
       "type": "travel-optin",
       "start": "2026-07-18T07:00:00",
       "end": "2026-07-18T08:00:00",
@@ -233,7 +233,7 @@
     },
     {
       "id": "sat-track-C-golf",
-      "summary": "[TRACK C] Golf — Santa María Golf Club (Jack Nicklaus)",
+      "summary": "Golf at Santa María Golf Club, Jack Nicklaus design (Track C)",
       "type": "optin",
       "start": "2026-07-18T08:00:00",
       "end": "2026-07-18T12:30:00",
