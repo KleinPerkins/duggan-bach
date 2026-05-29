@@ -97,7 +97,7 @@
       "start": "2026-07-17T08:00:00",
       "end": "2026-07-17T09:00:00",
       "description": "Launch point TBD — most catamaran charters depart from the Amador Causeway marinas (Flamenco / La Playita) ~15 min from JW. Confirm exact pier with George. Allow time for traffic + group muster. Bring: swimsuit, sunscreen, hat, dry bag for phone. Breakfast at the hotel before departure (MASI opens early; included).",
-      "location": "JW Marriott Panama lobby — pickup point (presumed launch: Amador Causeway marina)"
+      "location": "JW Marriott Panama lobby — pickup point"
     },
     {
       "id": "fri-catamaran",
@@ -115,7 +115,7 @@
       "start": "2026-07-17T15:00:00",
       "end": "2026-07-17T16:00:00",
       "description": "Return to launch point + Uber to JW. Decompress, shower before Friday dinner.",
-      "location": "Amador Causeway marina (presumed) → JW Marriott Panama"
+      "location": "Amador Causeway marina → JW Marriott Panama"
     },
 
     {
@@ -155,8 +155,8 @@
       "type": "travel",
       "start": "2026-07-17T21:00:00",
       "end": "2026-07-17T21:30:00",
-      "description": "Group muster point: Casco Viejo (presumed: Tantalo Rooftop, Calle 8 & Av B). Uber from JW or post-dinner location.",
-      "location": "Tantalo Rooftop (presumed muster), Casco Viejo, Panama City"
+      "description": "Group muster point: Tantalo Rooftop, Calle 8 & Av B, Casco Viejo. Uber from JW or post-dinner location.",
+      "location": "Tantalo Rooftop, Casco Viejo, Panama City"
     },
     {
       "id": "fri-rooftop",
@@ -174,8 +174,8 @@
       "start": "2026-07-18T00:30:00",
       "end": "2026-07-18T02:30:00",
       "transparency": "transparent",
-      "description": "OPT-IN for the late-night crowd. Presumed venue: Le Palace (Bellavista) — the standard Panama City gentlemen's club / late-show pick recommended in most nightlife guides; ~15 min Uber from Casco Viejo. Alternatives: Teatro Amador (Casco Viejo nightclub w/ themed shows, 2-floor) or La Gruta Azul (more high-energy floor). Specific spot decided day-of based on group pulse. Wake-up call for Saturday daytime activities is real — plan accordingly.",
-      "location": "Le Palace (presumed), Bellavista, Panama City"
+      "description": "OPT-IN for the late-night crowd. Venue: Le Palace (Bellavista) — ~15 min Uber from Casco Viejo. Alternates if the group wants to swap: Teatro Amador (Casco Viejo nightclub w/ themed shows, 2-floor) or La Gruta Azul (more high-energy floor). Wake-up call for Saturday daytime activities is real — plan accordingly.",
+      "location": "Le Palace, Bellavista, Panama City"
     },
 
     {
@@ -206,8 +206,8 @@
       "start": "2026-07-18T08:30:00",
       "end": "2026-07-18T09:30:00",
       "transparency": "transparent",
-      "description": "TRACK B opt-in only. Presumed range: Top Gun Panamá (https://topgunpanama.com) — bachelor-party-friendly experience packages w/ 9mm pistol, AR15, 12ga shotgun, revolver. Confirm booking with the range in advance. Bring valid photo ID. Allow Uber time + check-in.",
-      "location": "JW Marriott Panama lobby — pickup point (presumed range: Top Gun Panamá)"
+      "description": "TRACK B opt-in only. Range: Top Gun Panamá (https://topgunpanama.com) — bachelor-party-friendly experience packages w/ 9mm pistol, AR15, 12ga shotgun, revolver. Bring valid photo ID. Allow Uber time + check-in.",
+      "location": "JW Marriott Panama lobby — pickup point"
     },
     {
       "id": "sat-track-B-shooting",
@@ -216,8 +216,8 @@
       "start": "2026-07-18T09:30:00",
       "end": "2026-07-18T12:30:00",
       "transparency": "transparent",
-      "description": "TRACK B: Tactical shooting. Presumed venue: Top Gun Panamá (https://topgunpanama.com) — bachelor-party-friendly tourist experience. Multi-weapon packages (9mm, AR15, 12ga, revolver). Hours typically 9:30 AM – 6:30 PM Tue–Sat. Bring valid photo ID; tourists do NOT need a Panama firearms permit for supervised range experiences. Confirm booking + total $ with George by Thu Jul 2. All tracks reconvene at the Mercado de Marisco (fish market) for a 1:00 PM group lunch.",
-      "location": "Top Gun Panamá (presumed), Panama City"
+      "description": "TRACK B: Tactical shooting at Top Gun Panamá (https://topgunpanama.com). Bachelor-party-friendly tourist experience with multi-weapon packages (9mm, AR15, 12ga, revolver). Bring valid photo ID; tourists do NOT need a Panama firearms permit for supervised range experiences. All tracks reconvene at the Mercado de Marisco (fish market) for a 1:00 PM group lunch.",
+      "location": "Top Gun Panamá, Panama City"
     },
 
     {
@@ -238,8 +238,8 @@
       "start": "2026-07-18T07:00:00",
       "end": "2026-07-18T08:00:00",
       "transparency": "transparent",
-      "description": "TRACK C opt-in only. Presumed course: Santa María Golf Club (Jack Nicklaus design, Costa del Este) — ~15 min from JW, par-72, 7,153 yds, Troon-managed. Tee time + non-resident guest access need booking in advance (call +507 340-9300 or info@santamariapanama.com). Early 7 AM Uber to beat heat + Panama afternoon rain.",
-      "location": "JW Marriott Panama lobby — pickup point (presumed course: Santa María Golf Club)"
+      "description": "TRACK C opt-in only. Course: Santa María Golf Club (Jack Nicklaus design, Costa del Este) — ~15 min from JW, par-72, 7,153 yds, Troon-managed. Early 7 AM Uber to beat heat + Panama afternoon rain.",
+      "location": "JW Marriott Panama lobby — pickup point"
     },
     {
       "id": "sat-track-C-golf",
@@ -248,8 +248,8 @@
       "start": "2026-07-18T08:00:00",
       "end": "2026-07-18T12:30:00",
       "transparency": "transparent",
-      "description": "TRACK C: Golf, 18 holes at Santa María Golf Club (presumed) — Jack Nicklaus design, Troon-managed, par-72, 7,153 yds from the back tees. Sat green fee ~$175 + tax; equipment rental ~$50 + tax. Tee time + non-resident guest access need booking in advance (https://www.santamariapanama.com/en/golf, +507 340-9300, info@santamariapanama.com). Pace-of-play target: 4.5 hrs to hit the 12:30 wrap. Coordinate via the opt-in form or ping Laurence by Thu Jul 2. All tracks reconvene at the Mercado de Marisco (fish market) for a 1:00 PM group lunch — Uber straight from the course.",
-      "location": "Santa María Golf Club (presumed), Costa del Este, Panama City"
+      "description": "TRACK C: Golf, 18 holes at Santa María Golf Club — Jack Nicklaus design, Troon-managed, par-72, 7,153 yds from the back tees. Sat green fee ~$175 + tax; equipment rental ~$50 + tax. Pace-of-play target: 4.5 hrs to hit the 12:30 wrap. Coordinate via the opt-in form or ping Laurence by Thu Jul 2. All tracks reconvene at the Mercado de Marisco (fish market) for a 1:00 PM group lunch — Uber straight from the course.",
+      "location": "Santa María Golf Club, Costa del Este, Panama City"
     },
 
     {
