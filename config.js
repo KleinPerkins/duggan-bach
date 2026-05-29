@@ -22,5 +22,5 @@ window.SITE_CONFIG = {
   // optinSheetId + optinSheetGid populated by scripts/wire_optin_sheet.py
   // after you complete the manual "Link to Sheets" step (Form Responses 2 tab).
   optinSheetId: "1IA9tqeFJJlz_SrlwgWwftjI5ub8gs5uddGXdV733Nio",
-  optinSheetGid: null,
+  optinSheetGid: "1069474027"null,
 };

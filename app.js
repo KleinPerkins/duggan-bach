@@ -211,8 +211,6 @@
 
     const satCol = findCol(rows, ["saturday", "track"]) || findCol(rows, ["sat", "daytime"]);
     const friCol = findCol(rows, ["friday", "dinner"]);
-    const thuCol = findCol(rows, ["thursday", "late"]);
-    const friLateCol = findCol(rows, ["friday", "late"]);
 
     const totalResponses = rows.length;
     let html = `<div class="optin-tally-card">
@@ -233,16 +231,6 @@
       "C · Tacos": ["option c", "tacos", "cholula"],
       "Undecided": ["undecided"],
       "Skipping": ["skip"],
-    });
-    html += renderTallyCard("Thu late-night", rows, thuCol, {
-      "Yes": ["yes"],
-      "No": ["no"],
-      "Maybe": ["maybe"],
-    });
-    html += renderTallyCard("Fri late-night", rows, friLateCol, {
-      "Yes": ["yes"],
-      "No": ["no"],
-      "Maybe": ["maybe"],
     });
     return html;
   }
