@@ -8,7 +8,7 @@
   <meta property="og:title" content="Duggan Bachelor Party — Panama City">
   <meta property="og:description" content="Jul 16–19, 2026 · JW Marriott Panama">
   <meta property="og:type" content="website">
-  <link rel="stylesheet" href="styles.css?v=1780044371">
+  <link rel="stylesheet" href="styles.css?v=1780044937">
   <link rel="preload" as="image" href="assets/intro-hype.png">
 </head>
 <body>
@@ -223,8 +223,8 @@
       </a>
     </div>
 
-    <div class="flight-sheet-wrap">
-      <iframe id="flight-sheet-embed" title="Flight responses" frameborder="0" loading="lazy"></iframe>
+    <div id="flight-diagram" class="flight-diagram" aria-live="polite">
+      <div class="loading">Loading flight diagram…</div>
     </div>
     <p class="flight-fallback" id="flight-fallback" hidden>
       Flight sheet not yet connected. Use the form above for now.
@@ -237,7 +237,7 @@
   </footer>
 
   <script>
-    window.__BUILD_VERSION = "1780044371";
+    window.__BUILD_VERSION = "1780044937";
 
     // ── Hype intro controller + Canvas particle engine ───────────────────
     (function () {
@@ -422,7 +422,7 @@
       }
     })();
   </script>
-  <script src="config.js?v=1780044371"></script>
-  <script src="app.js?v=1780044371"></script>
+  <script src="config.js?v=1780044937"></script>
+  <script src="app.js?v=1780044937"></script>
 </body>
 </html>

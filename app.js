@@ -31,25 +31,300 @@
   setHref("calendar-public-link", cfg.calendarEmbedUrl, { newTab: true });
 
   // ===================================================================
-  // Flight sheet embed + view button
+  // Flight diagram — custom dynamic visual built from the linked Sheet
+  // (via gviz/tq) instead of an iframe embed. Groups co-flyers on the
+  // same airline+flight #; sorts by date + local PTY time.
   // ===================================================================
-  (function wireFlights() {
-    const embed = document.getElementById("flight-sheet-embed");
+  (function wireFlightSheetBtn() {
     const btn = document.getElementById("flight-sheet-btn");
-    const fallback = document.getElementById("flight-fallback");
-    if (cfg.flightSheetEmbedUrl) {
-      embed.src = cfg.flightSheetEmbedUrl;
-      if (btn && cfg.flightSheetViewUrl) {
-        btn.href = cfg.flightSheetViewUrl;
-        btn.target = "_blank";
-        btn.rel = "noopener";
-      } else if (btn) btn.style.display = "none";
-    } else {
-      embed.style.display = "none";
-      if (fallback) fallback.hidden = false;
-      if (btn) btn.style.display = "none";
-    }
+    if (btn && cfg.flightSheetViewUrl) {
+      btn.href = cfg.flightSheetViewUrl;
+      btn.target = "_blank";
+      btn.rel = "noopener";
+    } else if (btn) btn.style.display = "none";
   })();
+
+  loadFlightDiagram();
+
+  async function loadFlightDiagram() {
+    const container = document.getElementById("flight-diagram");
+    if (!container) return;
+
+    // Sheet ID/GID lives in form_sheet_state.json; reuse opt-in sheet ID
+    // (same spreadsheet, different tab/gid).
+    const SHEET_ID = cfg.optinSheetId; // same spreadsheet as opt-ins
+    const SHEET_GID = "1113867018";    // flight responses tab (form_sheet_state.json)
+
+    try {
+      const rows = await fetchSheetRows(SHEET_ID, SHEET_GID);
+      if (!rows || rows.length === 0) {
+        container.innerHTML = renderFlightEmpty();
+        return;
+      }
+      const flights = rows.map(parseFlightRow).filter(f => f.name);
+      container.innerHTML = renderFlightDiagram(flights);
+    } catch (err) {
+      console.warn("flight diagram load failed:", err);
+      container.innerHTML = `
+        <div class="flight-diagram-error">
+          Couldn't load the live flight diagram (${escapeHtml(err.message || "unknown")}).
+          <a href="${escapeAttr(cfg.flightSheetViewUrl || "#")}" target="_blank" rel="noopener">View the raw sheet →</a>
+        </div>`;
+    }
+  }
+
+  function renderFlightEmpty() {
+    const formUrl = escapeAttr(cfg.flightFormUrl || "#");
+    return `
+      <div class="flight-diagram-empty">
+        <div class="flight-diagram-empty-plane" aria-hidden="true">✈</div>
+        <h3>No flights submitted yet</h3>
+        <p>Be the first to drop yours — takes 30 seconds.</p>
+        <a class="action-btn primary" href="${formUrl}" target="_blank" rel="noopener">
+          <span class="action-icon">➕</span>
+          <span class="action-label">Add Your Flight</span>
+        </a>
+      </div>`;
+  }
+
+  /**
+   * Translate one sheet row into a structured flight object. Tolerant of
+   * column-label variations: we match on substring keywords so future
+   * cosmetic edits to the form question titles don't break parsing.
+   */
+  function parseFlightRow(row) {
+    const get = (...needles) => {
+      for (const key of Object.keys(row)) {
+        const lk = key.toLowerCase();
+        if (needles.every(n => lk.includes(n.toLowerCase()))) {
+          const v = row[key];
+          return v == null ? "" : String(v).trim();
+        }
+      }
+      return "";
+    };
+    const name = get("your name") || get("name");
+    const arrivalFlight = get("arrival", "airline");
+    const arrivalWhen = get("arrival", "date");
+    const departureFlight = get("departure", "airline");
+    const departureWhen = get("departure", "date");
+    const notes = get("notes");
+
+    return {
+      name,
+      arrivalFlight,
+      arrivalWhen,
+      arrivalParsed: parseFlightDateTime(arrivalWhen),
+      arrivalCode: extractFlightCode(arrivalFlight),
+      departureFlight,
+      departureWhen,
+      departureParsed: parseFlightDateTime(departureWhen),
+      departureCode: extractFlightCode(departureFlight),
+      notes,
+    };
+  }
+
+  // Free-text date parse. Submitters type things like
+  //   "Thu Jul 16, 3:45 PM" / "Wed Jul 15th, 10:27 AM" / "Jul 19 6:30 PM"
+  // We treat the time as **PTY-local wall-clock** — i.e. exactly what the
+  // user typed — so we build a Date in the viewer's local TZ that has the
+  // same hour/minute/day. That keeps the rendered time consistent for every
+  // viewer regardless of their timezone.
+  //
+  // Validation: require at least a month + day to count as parsed (rejects
+  // garbage like "TBD" or "foo bar" which Date.parse would silently coerce).
+  function parseFlightDateTime(s) {
+    if (!s) return { date: null, ok: false, label: "" };
+    const raw = String(s).trim();
+    const monthRe = /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)/i;
+    if (!monthRe.test(raw) || !/\d/.test(raw)) {
+      return { date: null, ok: false, label: raw };
+    }
+    let cleaned = raw.replace(/(\d+)(st|nd|rd|th)/gi, "$1");
+    if (!/\b20\d\d\b/.test(cleaned)) cleaned = cleaned + " 2026";
+    const t = Date.parse(cleaned);
+    if (isNaN(t)) return { date: null, ok: false, label: raw };
+    return { date: new Date(t), ok: true, label: raw };
+  }
+
+  // Pull out a normalized airline+flight code (e.g. "COPA CM408" → "CM408",
+  // "AA 1234" → "AA1234") so we can group co-flyers reliably.
+  function extractFlightCode(s) {
+    if (!s) return "";
+    const m = String(s).toUpperCase().match(/[A-Z]{1,3}\s*\d{2,5}/g);
+    if (!m) return String(s).toUpperCase().replace(/\s+/g, "");
+    return m[m.length - 1].replace(/\s+/g, "");
+  }
+
+  function formatFlightTime(d) {
+    if (!d) return "";
+    return d.toLocaleTimeString("en-US", {
+      hour: "numeric", minute: "2-digit", hour12: true,
+    });
+  }
+  function formatFlightDate(d) {
+    if (!d) return "";
+    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  }
+  function dayKey(d) {
+    if (!d) return "unknown";
+    return d.toISOString().slice(0, 10);
+  }
+
+  function renderFlightDiagram(flights) {
+    // Split into arrivals + departures. A flight is "present" on either
+    // track only if it has at least the flight string filled in.
+    const arrivals = flights
+      .filter(f => f.arrivalFlight || f.arrivalWhen)
+      .map(f => ({
+        kind: "arrival",
+        name: f.name,
+        flightText: f.arrivalFlight,
+        code: f.arrivalCode,
+        whenLabel: f.arrivalWhen,
+        when: f.arrivalParsed.date,
+        notes: f.notes,
+      }));
+
+    const departures = flights
+      .filter(f => f.departureFlight || f.departureWhen)
+      .map(f => ({
+        kind: "departure",
+        name: f.name,
+        flightText: f.departureFlight,
+        code: f.departureCode,
+        whenLabel: f.departureWhen,
+        when: f.departureParsed.date,
+        notes: f.notes,
+      }));
+
+    const arrivalCards = groupAndSortFlights(arrivals);
+    const departureCards = groupAndSortFlights(departures);
+
+    const totalSubmitted = flights.length;
+    const submittedLine = `<p class="flight-diagram-sub">${totalSubmitted} ${totalSubmitted === 1 ? "submission" : "submissions"} so far · live from the form</p>`;
+
+    return `
+      ${submittedLine}
+      <div class="flight-track flight-track-arrivals">
+        <div class="flight-track-header">
+          <span class="flight-track-pin" aria-hidden="true">↘</span>
+          <h3 class="flight-track-title">Arrivals → PTY</h3>
+          <span class="flight-track-count">${arrivalCards.length} ${arrivalCards.length === 1 ? "flight" : "flights"}</span>
+        </div>
+        ${arrivalCards.length === 0
+          ? `<div class="flight-track-empty">No arrivals logged yet.</div>`
+          : arrivalCards.map(c => renderFlightCard(c, "arrival")).join("")}
+      </div>
+
+      <div class="flight-track flight-track-departures">
+        <div class="flight-track-header">
+          <span class="flight-track-pin" aria-hidden="true">↗</span>
+          <h3 class="flight-track-title">PTY → Departures</h3>
+          <span class="flight-track-count">${departureCards.length} ${departureCards.length === 1 ? "flight" : "flights"}</span>
+        </div>
+        ${departureCards.length === 0
+          ? `<div class="flight-track-empty">No departures logged yet.</div>`
+          : departureCards.map(c => renderFlightCard(c, "departure")).join("")}
+      </div>
+    `;
+  }
+
+  /**
+   * Bucket by flight code (when known) so co-flyers stack on one card. If
+   * the code is empty/unparsable, group by the lowercased raw flight string
+   * + the day so two people who typed "TBD" don't accidentally cluster.
+   */
+  function groupAndSortFlights(items) {
+    const buckets = new Map();
+    for (const item of items) {
+      const day = dayKey(item.when);
+      const groupKey = item.code
+        ? `code:${item.code}`
+        : `raw:${(item.flightText || "(unknown)").toLowerCase()}|${day}`;
+      if (!buckets.has(groupKey)) {
+        buckets.set(groupKey, {
+          flightText: item.flightText,
+          code: item.code,
+          whenLabel: item.whenLabel,
+          when: item.when,
+          passengers: [],
+        });
+      }
+      const b = buckets.get(groupKey);
+      b.passengers.push({ name: item.name, notes: item.notes });
+      // Prefer the parsed date from any passenger that supplied one
+      if (!b.when && item.when) {
+        b.when = item.when;
+        b.whenLabel = item.whenLabel;
+      }
+    }
+    const cards = [...buckets.values()];
+    cards.sort((a, b) => {
+      if (a.when && b.when) return a.when - b.when;
+      if (a.when) return -1;
+      if (b.when) return 1;
+      return 0;
+    });
+    return cards;
+  }
+
+  function renderFlightCard(card, kind) {
+    const isArr = kind === "arrival";
+    const timeStr = card.when ? formatFlightTime(card.when) : "";
+    const dateStr = card.when ? formatFlightDate(card.when) : "";
+    const rawWhenStr = !card.when && card.whenLabel
+      ? escapeHtml(card.whenLabel)
+      : "";
+
+    const flightLabel = card.flightText
+      ? escapeHtml(card.flightText)
+      : `<span class="flight-card-flight-unknown">flight TBD</span>`;
+
+    const passengers = card.passengers
+      .map(p => `<li class="flight-passenger">
+        <span class="flight-passenger-dot" aria-hidden="true"></span>
+        <span class="flight-passenger-name">${escapeHtml(p.name)}</span>
+      </li>`).join("");
+
+    const ptyChip = `<span class="flight-airport-chip">PTY</span>`;
+    const planeBlock = `
+      <span class="flight-route">
+        ${isArr ? `<span class="flight-airport-chip flight-airport-origin">From</span>` : ptyChip}
+        <span class="flight-route-line" aria-hidden="true">
+          <span class="flight-route-dash"></span>
+          <span class="plane-icon ${isArr ? "plane-arrival" : "plane-departure"}">✈</span>
+        </span>
+        ${isArr ? ptyChip : `<span class="flight-airport-chip flight-airport-origin">To</span>`}
+      </span>`;
+
+    const groupBadge = card.passengers.length > 1
+      ? `<span class="flight-group-badge">×${card.passengers.length} co-flyers</span>`
+      : "";
+
+    const whenBlock = card.when
+      ? `<div class="flight-card-when">
+           <div class="flight-card-time">${escapeHtml(timeStr)}</div>
+           <div class="flight-card-date">${escapeHtml(dateStr)}</div>
+         </div>`
+      : `<div class="flight-card-when flight-card-when-unknown">
+           <div class="flight-card-time">${rawWhenStr || "—"}</div>
+           <div class="flight-card-date">time TBD</div>
+         </div>`;
+
+    return `
+      <article class="flight-card flight-card-${kind}">
+        ${whenBlock}
+        <div class="flight-card-body">
+          <div class="flight-card-headline">
+            <span class="flight-card-flight">${flightLabel}</span>
+            ${groupBadge}
+          </div>
+          ${planeBlock}
+          <ul class="flight-card-passengers">${passengers}</ul>
+        </div>
+      </article>`;
+  }
 
   // ===================================================================
   // 4-day calendar widget — rendered later by renderScheduleGrid() once
