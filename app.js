@@ -57,20 +57,15 @@
   (function wireCalendarWidget() {
     const frame = document.getElementById("calendar-widget-frame");
     if (!frame || !cfg.calendarId) return;
+    // Minimal embed URL — Google's parameter-rich embed URLs sometimes render
+    // a blank iframe due to internal SAMEORIGIN checks. Sticking to the
+    // straightforward 3-param URL keeps the iframe reliable; users can switch
+    // to week/day view via Google's UI inside the iframe.
     const params = new URLSearchParams({
       src: cfg.calendarId,
       ctz: cfg.calendarTimezone,
       mode: "WEEK",
-      dates: "20260716/20260720", // end-exclusive: covers Thu Jul 16 through Sun Jul 19
-      showTitle: "0",
-      showNav: "1",
-      showDate: "1",
-      showPrint: "0",
-      showTabs: "0",
-      showCalendars: "0",
-      showTz: "0",
-      hl: "en",
-      bgcolor: "%23ffffff",
+      dates: "20260716/20260720",
     });
     frame.src = `https://calendar.google.com/calendar/embed?${params.toString()}`;
   })();
@@ -85,12 +80,29 @@
 
     // Panama City coords
     const lat = 8.9824, lon = -79.5199;
-    const start = "2026-07-16", end = "2026-07-19";
+    const tripStart = new Date("2026-07-16T12:00:00-05:00");
+    const tripEnd = new Date("2026-07-19T12:00:00-05:00");
+    const now = new Date();
+    const msDay = 1000 * 60 * 60 * 24;
+    const daysToTrip = Math.ceil((tripStart - now) / msDay);
 
+    // Open-Meteo's standard forecast horizon is ~16 days. If we're outside
+    // that window, skip the API call and show climatological averages.
+    if (daysToTrip > 14) {
+      valueEl.textContent = "~87° / 76°F";
+      subEl.textContent = `Typical July · live forecast in ${daysToTrip - 14} days`;
+      return;
+    }
+
+    valueEl.textContent = "Loading…";
     try {
+      const fmt = (d) => d.toISOString().slice(0, 10);
+      // If the trip already started, clamp to today.
+      const fetchStart = now > tripStart ? fmt(now) : fmt(tripStart);
+      const fetchEnd = fmt(tripEnd);
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-        `&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code` +
-        `&timezone=America/Panama&start_date=${start}&end_date=${end}` +
+        `&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max` +
+        `&timezone=America/Panama&start_date=${fetchStart}&end_date=${fetchEnd}` +
         `&temperature_unit=fahrenheit`;
       const resp = await fetch(url, { cache: "no-store" });
       if (!resp.ok) throw new Error("HTTP " + resp.status);
@@ -98,7 +110,6 @@
       const d = data.daily;
       if (!d || !d.time || d.time.length === 0) throw new Error("no forecast data");
 
-      // Average max temp + worst precip prob across the 4 days
       const maxTemps = d.temperature_2m_max;
       const minTemps = d.temperature_2m_min;
       const precips = d.precipitation_probability_max;
@@ -107,10 +118,9 @@
       const maxRain = Math.max(...precips);
 
       valueEl.textContent = `${avgMax}° / ${avgMin}°F`;
-      subEl.textContent = `4-day avg · ${maxRain}% rain on worst day · live forecast`;
+      subEl.textContent = `${d.time.length}-day forecast · ${maxRain}% rain on worst day · live`;
     } catch (err) {
       console.warn("weather load failed:", err);
-      // Fallback to typical July climatology for Panama City
       valueEl.textContent = "~87° / 76°F";
       subEl.textContent = "Typical July · brief afternoon rain";
     }
