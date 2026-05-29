@@ -40,24 +40,45 @@
 }
 body:has(.intro:not(.intro-dismissed)) { overflow: hidden; }
 
+/* Themed gradient backdrop fills the area around the contained image so
+   landscape viewports don't show empty black bars. Visually echoes the
+   image's red/white/blue + sunset orange palette. */
+.intro {
+  background:
+    radial-gradient(ellipse at 30% 30%, rgba(255, 209, 102, 0.18) 0%, transparent 45%),
+    radial-gradient(ellipse at 70% 70%, rgba(255, 58, 58, 0.18) 0%, transparent 45%),
+    linear-gradient(135deg, #1a0a14 0%, #0a0e1f 50%, #1a0a14 100%);
+}
+
 .intro-bg {
   position: absolute;
-  inset: -2%;
-  background-size: cover;
-  background-position: center top;
+  inset: 0;
+  background-size: contain;
+  background-position: center center;
   background-repeat: no-repeat;
   opacity: 0;
-  transform: scale(1.08);
-  filter: brightness(0.7) saturate(1.15);
+  transform: scale(1.04);
+  filter: brightness(0.95) saturate(1.1) drop-shadow(0 0 60px rgba(255, 120, 73, 0.4));
   animation: intro-bg-in 5s cubic-bezier(.16,.84,.34,1) forwards;
 }
 
+/* On portrait viewports (phones), the image naturally fills the screen.
+   Switch to `cover` and anchor on the upper third so the man's face stays
+   visible when the aspect ratios are close to matching. */
+@media (orientation: portrait) {
+  .intro-bg {
+    background-size: cover;
+    background-position: center 30%;
+  }
+}
+
+/* Subtle bottom-vignette so the lower text/CTA reads cleanly without
+   covering the image. Top half of the image stays clear. */
 .intro-vignette {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.5) 75%, rgba(0,0,0,0.9) 100%),
-    linear-gradient(180deg, rgba(0,0,0,0.45) 0%, transparent 25%, transparent 60%, rgba(0,0,0,0.6) 100%);
+    linear-gradient(180deg, transparent 0%, transparent 55%, rgba(0,0,0,0.55) 90%, rgba(0,0,0,0.85) 100%);
   pointer-events: none;
 }
 
@@ -99,13 +120,21 @@ body:has(.intro:not(.intro-dismissed)) { overflow: hidden; }
   inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   text-align: center;
-  padding: 0 24px;
+  padding: 0 24px 8vh;
   color: white;
-  text-shadow: 0 2px 20px rgba(0,0,0,0.7), 0 0 40px rgba(0,0,0,0.5);
+  text-shadow: 0 3px 24px rgba(0,0,0,0.95), 0 0 50px rgba(0,0,0,0.85), 0 1px 2px rgba(0,0,0,1);
   pointer-events: none;
+}
+/* On portrait viewports, the image fills the screen, so put text back in
+   the lower-center where there's more headroom over the man's chest/bullets. */
+@media (orientation: portrait) {
+  .intro-content {
+    justify-content: flex-end;
+    padding-bottom: 12vh;
+  }
 }
 
 .intro-eyebrow {
