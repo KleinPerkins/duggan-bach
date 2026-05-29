@@ -330,7 +330,7 @@
       : `<div class="event-time"><span class="start">${formatTime(e.startDate, tz)}</span><span class="end">${formatTime(e.endDate, tz)}</span></div>`;
     const locHtml = e.location ? `<div class="event-location">${escapeHtml(e.location)}</div>` : "";
     const descHtml = e.description ? `<div class="event-desc">${linkify(escapeHtml(e.description))}</div>` : "";
-    return `<div class="event-card type-${e.type}">${timeHtml}<div class="event-body"><div class="event-title">${tag}${escapeHtml(e.summary)}</div>${locHtml}${descHtml}</div></div>`;
+    return `<div class="event-card type-${e.type}" id="event-${escapeHtml(e.id)}">${timeHtml}<div class="event-body"><div class="event-title">${tag}${escapeHtml(e.summary)}</div>${locHtml}${descHtml}</div></div>`;
   }
 
   function escapeHtml(s) {
@@ -450,8 +450,9 @@
 
     for (const [key, dayEvents] of groups) {
       html += `<div class="sg-col" data-day="${key}">`;
-      for (const e of dayEvents) {
-        const block = positionedEvent(e, key, tz);
+      const laid = layoutOverlaps(dayEvents, key);
+      for (const item of laid) {
+        const block = positionedEvent(item, key, tz);
         if (block) html += block;
       }
       html += `</div>`;
@@ -460,12 +461,14 @@
 
     scheduleGrid.innerHTML = html;
 
-    // Click handlers — jump to the day's tab in the Itinerary section
+    // Click: switch to the right day tab + scroll to the specific event card.
+    // [data-jump] (all-day banner) just jumps to day; [data-event-id] (event
+    // block) jumps to the matching event card and highlights it briefly.
     scheduleGrid.querySelectorAll("[data-jump], .sg-event").forEach(el => {
       el.addEventListener("click", () => {
         const day = el.dataset.day || el.dataset.jump;
+        const eventId = el.dataset.eventId;
         if (!day) return;
-        // Switch the itinerary tab
         document.querySelectorAll(".day-tab").forEach(b => {
           const match = b.dataset.day === day;
           b.classList.toggle("active", match);
@@ -475,35 +478,115 @@
           p.classList.toggle("active", p.dataset.day === day);
         });
         history.replaceState(null, "", `#day-${day}`);
-        // Scroll the itinerary into view
-        document.getElementById("itinerary")?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        if (eventId) {
+          // Wait one frame so the panel is visible before scrolling/measuring
+          requestAnimationFrame(() => {
+            const card = document.getElementById(`event-${eventId}`);
+            if (card) {
+              card.scrollIntoView({ behavior: "smooth", block: "center" });
+              card.classList.add("highlight-flash");
+              setTimeout(() => card.classList.remove("highlight-flash"), 1800);
+            } else {
+              document.getElementById("itinerary")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          });
+        } else {
+          document.getElementById("itinerary")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       });
     });
   }
 
-  function positionedEvent(e, dayKey, tz) {
-    if (e.isAllDay) return null; // rendered as banner
-    if (e.type === "bookend") return null; // arrival window noise
+  /**
+   * Sweep-line algorithm to assign each event a (lane, totalLanes) tuple so
+   * overlapping events render side-by-side in equal-width sub-columns.
+   *
+   * Groups events into "clusters" of mutually-overlapping events, then within
+   * each cluster greedily assigns each event the lowest-index lane it can
+   * occupy. The cluster's lane count becomes the divisor for every event in
+   * that cluster (so all peers render at the same width within their cluster).
+   */
+  function layoutOverlaps(events, dayKey) {
+    // Pre-filter to events that will actually render (matches positionedEvent's filters)
+    const renderable = events.filter(e =>
+      !e.isAllDay && e.type !== "bookend"
+    );
+    // Sort by start, then longer events first (so larger anchors come first)
+    renderable.sort((a, b) => {
+      const d = a.startDate - b.startDate;
+      return d !== 0 ? d : (b.endDate - b.startDate) - (a.endDate - a.startDate);
+    });
 
-    // Hours-since-window-start (decimal) for top + height
+    // Build clusters: walk sorted events; an event joins the current cluster
+    // iff it starts before the current cluster's max-end-so-far.
+    const out = [];
+    let cluster = [];
+    let clusterEnd = -Infinity;
+    function flushCluster() {
+      if (cluster.length === 0) return;
+      // Greedy lane assignment within the cluster
+      const lanes = []; // lanes[i] = endTime of last event placed in lane i
+      for (const ev of cluster) {
+        let placed = false;
+        for (let i = 0; i < lanes.length; i++) {
+          if (ev.startDate >= lanes[i]) {
+            ev._lane = i;
+            lanes[i] = ev.endDate;
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) {
+          ev._lane = lanes.length;
+          lanes.push(ev.endDate);
+        }
+      }
+      const totalLanes = lanes.length;
+      for (const ev of cluster) {
+        ev._totalLanes = totalLanes;
+        out.push(ev);
+      }
+      cluster = [];
+      clusterEnd = -Infinity;
+    }
+    for (const ev of renderable) {
+      if (ev.startDate >= clusterEnd) flushCluster();
+      cluster.push(ev);
+      clusterEnd = Math.max(clusterEnd, ev.endDate);
+    }
+    flushCluster();
+    return out;
+  }
+
+  function positionedEvent(e, dayKey, tz) {
+    if (e.isAllDay) return null;
+    if (e.type === "bookend") return null;
+
     const dayStartUtcMs = new Date(dayKey + "T00:00:00-05:00").getTime();
     const startHour = (e.startDate.getTime() - dayStartUtcMs) / (1000 * 60 * 60);
     const endHour = (e.endDate.getTime() - dayStartUtcMs) / (1000 * 60 * 60);
 
-    // Clip to window
     const top = Math.max(startHour, WINDOW_START_HOUR) - WINDOW_START_HOUR;
     const bottom = Math.min(endHour, WINDOW_END_HOUR) - WINDOW_START_HOUR;
     if (bottom <= 0 || top >= (WINDOW_END_HOUR - WINDOW_START_HOUR)) return null;
 
-    const heightHours = Math.max(0.5, bottom - top); // minimum 30-min block for visibility
+    const heightHours = Math.max(0.5, bottom - top);
+
+    // Sub-column placement: equal-width lanes within the day column
+    const lane = e._lane || 0;
+    const totalLanes = e._totalLanes || 1;
+    const widthPct = 100 / totalLanes;
+    const leftPct = lane * widthPct;
 
     const title = stripPrefix(e.summary);
     const timeStr = `${formatTime(e.startDate, tz)} – ${formatTime(e.endDate, tz)}`;
 
     return `<div class="sg-event t-${e.type}"
               data-day="${dayKey}"
+              data-event-id="${escapeHtml(e.id)}"
               title="${escapeHtml(e.summary)}\n${escapeHtml(timeStr)}${e.location ? '\n📍 ' + escapeHtml(e.location) : ''}"
-              style="top: calc(${top} * var(--hour-h)); height: calc(${heightHours} * var(--hour-h) - 2px);">
+              style="top: calc(${top} * var(--hour-h)); height: calc(${heightHours} * var(--hour-h) - 2px); left: calc(${leftPct}% + 2px); width: calc(${widthPct}% - 4px); right: auto;">
       <div class="sg-event-title">${escapeHtml(title)}</div>
       <div class="sg-event-time">${escapeHtml(timeStr)}</div>
     </div>`;
