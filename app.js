@@ -2,10 +2,13 @@
  * Duggan Bachelor Party site — runtime.
  *
  * Responsibilities:
- *  1. Pull live ICS feed from the public Google Calendar (via CORS proxy).
- *  2. Parse with ical.js, render day-by-day cards.
- *  3. Wire up the subscribe button, flight form button, sheet embed.
- *  4. Graceful fallback if ICS fetch fails (show calendar embed instead).
+ *  1. Load static itinerary.json (shipped with site), render day-by-day cards.
+ *     (Originally pulled ICS from Google Calendar at load, but Google's CORS
+ *     policy blocks browser fetches and public proxies are unreliable. We ship
+ *     the itinerary as static data instead. Re-deploy the site to publish
+ *     itinerary changes; deploy.sh handles that.)
+ *  2. Wire up the subscribe button, flight form button, sheet embed.
+ *  3. Graceful fallback if itinerary.json fails (show calendar embed instead).
  */
 
 (function () {
@@ -48,51 +51,49 @@
   const calendarPublicLink = document.getElementById("calendar-public-link");
   if (calendarPublicLink) calendarPublicLink.href = cfg.calendarEmbedUrl;
 
-  // ── Fetch + render itinerary ──────────────────────────────────────────
+  // ── Load + render itinerary ───────────────────────────────────────────
   const container = document.getElementById("itinerary-content");
 
-  function fetchIcs() {
-    const url = cfg.icsProxyUrl + encodeURIComponent(cfg.calendarIcsUrl);
-    return fetch(url, { cache: "no-store" })
+  function loadItinerary() {
+    return fetch("itinerary.json", { cache: "no-store" })
       .then(r => {
         if (!r.ok) throw new Error("HTTP " + r.status);
-        return r.text();
+        return r.json();
       });
   }
 
-  function parseIcs(icsText) {
-    const jcal = ICAL.parse(icsText);
-    const comp = new ICAL.Component(jcal);
-    const events = comp.getAllSubcomponents("vevent");
-    return events.map(ev => {
-      const e = new ICAL.Event(ev);
-      const desc = ev.getFirstPropertyValue("description") || "";
-      const loc = ev.getFirstPropertyValue("location") || "";
-      const transparency = ev.getFirstPropertyValue("transp") || "OPAQUE";
-      const startDate = e.startDate;
-      const endDate = e.endDate;
-
+  function normalizeEvents(raw) {
+    return raw.events.map(ev => {
+      const isAllDay = ev.type === "allday-hotel";
+      const startDate = isAllDay
+        ? new Date(ev.start_date + "T00:00:00")
+        : parseLocalDateTime(ev.start, raw._meta.timezone);
+      const endDate = isAllDay
+        ? new Date(ev.end_date + "T00:00:00")
+        : parseLocalDateTime(ev.end, raw._meta.timezone);
       return {
-        uid: e.uid,
-        summary: e.summary,
-        description: desc,
-        location: loc,
-        isAllDay: startDate.isDate,
-        startDate: startDate.toJSDate(),
-        endDate: endDate.toJSDate(),
-        transparency,
-        // Heuristic type classification from the summary line
-        type: classifyType(e.summary, transparency, startDate.isDate),
+        id: ev.id,
+        summary: ev.summary,
+        description: ev.description || "",
+        location: ev.location || "",
+        isAllDay,
+        startDate,
+        endDate,
+        type: ev.type || "locked",
       };
     });
   }
 
-  function classifyType(summary, transparency, isAllDay) {
-    if (isAllDay) return "allday-hotel";
-    if (/^\[opt-in/i.test(summary) || /^\[track [abc]\]/i.test(summary)) return "optin";
-    if (/^Depart|^Return /.test(summary)) return "travel";
-    if (/Arrival window|Departure window|decompress|send-off/i.test(summary)) return "bookend";
-    return "locked";
+  // Parse "2026-07-16T19:00:00" as a local-time-in-Panama wall-clock value.
+  // We can render this directly with toLocaleString({timeZone: ...}) and avoid
+  // user-timezone drift because the rendered string is what the user reads.
+  // For simplicity we store as a Date assuming the timestamp is already in the
+  // target timezone and use timeZone:Panama for all formatting.
+  function parseLocalDateTime(s, tz) {
+    // Treat the ISO-without-zone as Panama-local. We construct a UTC-equivalent
+    // Date and then always format with timeZone:Panama, so the displayed value
+    // matches what's in itinerary.json regardless of the viewer's locale.
+    return new Date(s + "-05:00"); // Panama is UTC-5 year-round, no DST.
   }
 
   function groupByDay(events) {
@@ -207,8 +208,8 @@
   }
 
   // ── Boot ──────────────────────────────────────────────────────────────
-  fetchIcs()
-    .then(parseIcs)
+  loadItinerary()
+    .then(normalizeEvents)
     .then(render)
     .catch(err => {
       console.error("Itinerary load failed:", err);
