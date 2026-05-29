@@ -24,6 +24,6 @@ window.SITE_CONFIG = {
 
   // Flight sheet — populated after manual Form-to-Sheet link step
   // Format: published-to-web URL of the sheet (set to null until linked)
-  flightSheetEmbedUrl: null,
-  flightSheetViewUrl: null,
+  flightSheetEmbedUrl: "https://docs.google.com/spreadsheets/d/1rYZYlRqDQBzsqlc53tlYq0me39G_yVToUwQrz4r19MM/htmlembed?gid=478115035&widget=true&headers=false&chrome=false",
+  flightSheetViewUrl: "https://docs.google.com/spreadsheets/d/1rYZYlRqDQBzsqlc53tlYq0me39G_yVToUwQrz4r19MM/edit#gid=478115035",
 };
