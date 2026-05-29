@@ -473,16 +473,7 @@
     const satCol = findCol(rows, ["saturday", "track"]) || findCol(rows, ["sat", "daytime"]);
     const friCol = findCol(rows, ["friday", "dinner"]);
 
-    const totalResponses = rows.length;
-    let html = `<div class="optin-tally-card optin-tally-card-summary">
-      <h4>Responses</h4>
-      <div class="optin-tally-row optin-tally-row-summary">
-        <span class="optin-tally-label">Total submitted</span>
-        <span class="optin-tally-count optin-tally-count-summary">${totalResponses}</span>
-      </div>
-    </div>`;
-
-    html += renderTallyCard("Saturday daytime", rows, satCol, {
+    let html = renderTallyCard("Saturday daytime", rows, satCol, {
       "Canal lochs":   ["track a", "locks", "loch", "canal"],
       "Tactical range":["track b", "shooting", "top gun", "tactical"],
       "Golf":          ["track c", "golf", "santa mar"],
