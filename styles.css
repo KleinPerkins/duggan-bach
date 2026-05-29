@@ -606,6 +606,72 @@ a:hover { text-decoration: underline; }
   position: relative;
   z-index: 10;
 }
+
+/* ── Floating sticky action bar variant ──────────────────────────────────
+   Fixes the 3-up action grid to the bottom-center of the viewport as a
+   glass-morphism pill. Compact mode hides .action-sub. */
+.actions.floating {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 640px;
+  margin: 0;
+  padding: 8px;
+  gap: 8px;
+  z-index: 100;
+  background: rgba(15, 18, 30, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 999px;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: floating-bar-in 0.5s cubic-bezier(.2,.9,.3,1) 0.2s both;
+}
+.actions.floating .action-btn {
+  padding: 10px 14px;
+  font-size: 13px;
+  border-radius: 999px;
+  gap: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.actions.floating .action-btn:hover { transform: translateY(-1px); }
+.actions.floating .action-sub { display: none; }
+.actions.floating .action-label-row { gap: 6px; }
+.actions.floating .action-icon { font-size: 16px; }
+.actions.floating .action-label { font-size: 13px; }
+
+@keyframes floating-bar-in {
+  0%   { opacity: 0; transform: translate(-50%, 20px); }
+  100% { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actions.floating { animation: none; }
+}
+
+/* Very small screens: icon-only floating buttons */
+@media (max-width: 480px) {
+  .actions.floating {
+    width: calc(100% - 16px);
+    bottom: 12px;
+    padding: 6px;
+    gap: 6px;
+  }
+  .actions.floating .action-btn { padding: 10px 8px; }
+  .actions.floating .action-label { display: none; }
+  .actions.floating .action-icon { font-size: 20px; }
+}
+
+/* Ensure last sections aren't hidden under the floating bar */
+body { padding-bottom: 96px; }
+@media (max-width: 480px) {
+  body { padding-bottom: 84px; }
+}
 .action-btn {
   display: flex;
   flex-direction: column;
@@ -685,14 +751,15 @@ a:hover { text-decoration: underline; }
   padding: 0 16px;
 }
 
-/* Responsive: collapse both grids in lock-step so the alignment holds */
+/* Responsive: collapse both grids in lock-step so the alignment holds.
+   Floating action bar keeps its 3-col layout at every breakpoint. */
 @media (max-width: 640px) {
-  .actions, .quick-facts {
+  .actions:not(.floating), .quick-facts {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 @media (max-width: 420px) {
-  .actions, .quick-facts {
+  .actions:not(.floating), .quick-facts {
     grid-template-columns: 1fr;
   }
 }
@@ -848,6 +915,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .optin-tallies {
@@ -869,24 +937,94 @@ a:hover { text-decoration: underline; }
   color: var(--color-text-muted);
   margin-bottom: 10px;
 }
+.optin-tally-card h4 .optin-tally-total {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--color-text-dim);
+  background: rgba(255,255,255,0.05);
+  padding: 2px 7px;
+  border-radius: 999px;
+  vertical-align: middle;
+}
 .optin-tally-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 4px 0;
-  font-size: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(60px, 1.1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13px;
   color: var(--color-text);
   border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .optin-tally-row:last-child { border-bottom: 0; }
-.optin-tally-label { flex: 1; min-width: 0; padding-right: 8px; }
+.optin-tally-row-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.optin-tally-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.optin-tally-row.is-leader .optin-tally-label {
+  color: var(--color-accent-2);
+  font-weight: 600;
+}
+.optin-tally-bar {
+  position: relative;
+  display: block;
+  height: 10px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  overflow: hidden;
+  min-width: 40px;
+}
+.optin-tally-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--fill, 0%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-accent) 0%, var(--color-accent-2) 100%);
+  box-shadow: 0 0 8px rgba(255, 120, 73, 0.35);
+  transform-origin: left center;
+  animation: tally-bar-fill 0.7s cubic-bezier(.22,.9,.3,1) both;
+}
+.optin-tally-row.is-leader .optin-tally-bar-fill {
+  box-shadow: 0 0 12px rgba(255, 209, 102, 0.5);
+}
+@keyframes tally-bar-fill {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
 .optin-tally-count {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   color: var(--color-accent-2);
-  font-size: 16px;
-  min-width: 28px;
+  font-size: 15px;
+  min-width: 22px;
   text-align: right;
+}
+.optin-tally-count-summary { font-size: 18px; }
+@media (prefers-reduced-motion: reduce) {
+  .optin-tally-bar-fill { animation: none; }
+}
+@media (max-width: 520px) {
+  .optin-tally-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "label count"
+      "bar   bar";
+    gap: 4px 10px;
+    padding: 9px 0;
+  }
+  .optin-tally-label { grid-area: label; white-space: normal; }
+  .optin-tally-count { grid-area: count; }
+  .optin-tally-bar   { grid-area: bar; }
 }
 .optin-tally-empty {
   font-size: 13px;
@@ -1567,7 +1705,7 @@ a:hover { text-decoration: underline; }
 @media (max-width: 480px) {
   .event-card { grid-template-columns: 70px 1fr; gap: 10px; padding: 12px 14px; }
   .event-time { font-size: 12px; }
-  .actions { flex-direction: column; }
+  .actions:not(.floating) { flex-direction: column; }
   .action-btn { min-width: 0; }
   .hero { padding: 50px 16px 70px; }
 

@@ -474,24 +474,27 @@
     const friCol = findCol(rows, ["friday", "dinner"]);
 
     const totalResponses = rows.length;
-    let html = `<div class="optin-tally-card">
+    let html = `<div class="optin-tally-card optin-tally-card-summary">
       <h4>Responses</h4>
-      <div class="optin-tally-row"><span class="optin-tally-label">Total submitted</span><span class="optin-tally-count">${totalResponses}</span></div>
+      <div class="optin-tally-row optin-tally-row-summary">
+        <span class="optin-tally-label">Total submitted</span>
+        <span class="optin-tally-count optin-tally-count-summary">${totalResponses}</span>
+      </div>
     </div>`;
 
     html += renderTallyCard("Saturday daytime", rows, satCol, {
-      "Track A": ["track a", "locks"],
-      "Track B": ["track b", "shooting"],
-      "Track C": ["track c", "golf"],
-      "Undecided": ["undecided"],
-      "Hotel": ["sleeping", "chill", "hotel"],
+      "Canal lochs":   ["track a", "locks", "loch", "canal"],
+      "Tactical range":["track b", "shooting", "top gun", "tactical"],
+      "Golf":          ["track c", "golf", "santa mar"],
+      "Undecided":     ["undecided"],
+      "Hotel":         ["sleeping", "chill", "hotel", "skip"],
     });
     html += renderTallyCard("Friday dinner", rows, friCol, {
-      "A · La Barbara": ["option a", "barbara"],
-      "B · Fish market": ["option b", "fish", "mercado"],
-      "C · Tacos": ["option c", "tacos", "cholula"],
-      "Undecided": ["undecided"],
-      "Skipping": ["skip"],
+      "La Barbara (sushi)": ["option a", "barbara", "sushi"],
+      "Fish market":        ["option b", "fish", "mercado", "marisco"],
+      "Tacos Cholula":      ["option c", "tacos", "cholula"],
+      "Undecided":          ["undecided"],
+      "Skipping":           ["skip"],
     });
     return html;
   }
@@ -503,6 +506,7 @@
     const counts = {};
     for (const label of Object.keys(buckets)) counts[label] = 0;
     counts["(other)"] = 0;
+    let totalVotes = 0;
     for (const row of rows) {
       const val = (row[columnKey] || "").toString().toLowerCase().trim();
       if (!val) continue;
@@ -511,17 +515,34 @@
         if (partials.some(p => val.includes(p.toLowerCase()))) {
           counts[label]++;
           matched = true;
+          totalVotes++;
           break;
         }
       }
-      if (!matched) counts["(other)"]++;
+      if (!matched) { counts["(other)"]++; totalVotes++; }
     }
-    const rowsHtml = Object.entries(counts)
-      .filter(([label, c]) => c > 0 || label !== "(other)")
-      .map(([label, c]) =>
-        `<div class="optin-tally-row"><span class="optin-tally-label">${escapeHtml(label)}</span><span class="optin-tally-count">${c}</span></div>`
-      ).join("");
-    return `<div class="optin-tally-card"><h4>${escapeHtml(title)}</h4>${rowsHtml || '<div class="optin-tally-empty" style="padding:8px 0">No responses yet</div>'}</div>`;
+
+    const maxCount = Math.max(1, ...Object.values(counts));
+    const entries = Object.entries(counts).filter(([label, c]) => c > 0 || label !== "(other)");
+    const leaderCount = Math.max(...entries.map(([, c]) => c), 0);
+
+    const rowsHtml = entries.map(([label, c]) => {
+      const pct = totalVotes > 0 ? Math.round((c / totalVotes) * 100) : 0;
+      const fillPct = maxCount > 0 ? Math.round((c / maxCount) * 100) : 0;
+      const isLeader = c > 0 && c === leaderCount;
+      return `<div class="optin-tally-row${isLeader ? " is-leader" : ""}">
+        <span class="optin-tally-label">${escapeHtml(label)}</span>
+        <span class="optin-tally-bar" role="img" aria-label="${c} of ${totalVotes} votes (${pct}%)">
+          <span class="optin-tally-bar-fill" style="--fill: ${fillPct}%;"></span>
+        </span>
+        <span class="optin-tally-count">${c}</span>
+      </div>`;
+    }).join("");
+
+    return `<div class="optin-tally-card">
+      <h4>${escapeHtml(title)} <span class="optin-tally-total">${totalVotes} vote${totalVotes === 1 ? "" : "s"}</span></h4>
+      ${rowsHtml || '<div class="optin-tally-empty" style="padding:8px 0">No responses yet</div>'}
+    </div>`;
   }
 
   // ===================================================================
