@@ -186,9 +186,9 @@
       "summary": "[TRACK A] Panama Canal — Miraflores Locks tour",
       "type": "optin",
       "start": "2026-07-18T09:30:00",
-      "end": "2026-07-18T12:00:00",
+      "end": "2026-07-18T12:30:00",
       "transparency": "transparent",
-      "description": "TRACK A: Locks tour + fish-market lunch. Watch ships transit the locks; museum + observation deck. Pair with Track B at fish market for lunch. https://visitcanaldepanama.com/en/points-of-interest/miraflores-visitor-center/.",
+      "description": "TRACK A: Locks tour. Watch ships transit the locks; museum + observation deck. All tracks reconvene at the Mercado de Marisco (fish market) for a 1:00 PM group lunch. https://visitcanaldepanama.com/en/points-of-interest/miraflores-visitor-center/.",
       "location": "Miraflores Visitor Center, Panama Canal"
     },
 
@@ -206,19 +206,19 @@
       "summary": "[TRACK B] Tactical shooting",
       "type": "optin",
       "start": "2026-07-18T09:30:00",
-      "end": "2026-07-18T12:00:00",
+      "end": "2026-07-18T12:30:00",
       "transparency": "transparent",
-      "description": "TRACK B: Tactical shooting + fish-market lunch. Specific range + booking TBD. Pair with Track A at fish market for lunch."
+      "description": "TRACK B: Tactical shooting. Specific range + booking TBD. All tracks reconvene at the Mercado de Marisco (fish market) for a 1:00 PM group lunch."
     },
 
     {
-      "id": "sat-track-AB-lunch",
-      "summary": "[TRACK A+B] Lunch — Mercado de Marisco (Fish Market)",
+      "id": "sat-track-all-lunch",
+      "summary": "[ALL TRACKS] Lunch — Mercado de Marisco (Fish Market)",
       "type": "optin",
-      "start": "2026-07-18T12:30:00",
-      "end": "2026-07-18T14:00:00",
+      "start": "2026-07-18T13:00:00",
+      "end": "2026-07-18T14:30:00",
       "transparency": "transparent",
-      "description": "Combined lunch for Track A (Locks) + Track B (Shooting). Pick your seafood at the stalls, they grill it. Casual, no reservation needed. ~10 min from Casco Viejo, ~15 min from JW. https://www.tripadvisor.com/Attraction_Review-g294480-d2589867-Reviews-Mercado_Publico_del_Marisco-Panama_City_Panama_Province.html.",
+      "description": "Combined lunch for ALL Saturday daytime tracks (A Locks / B Shooting / C Golf). Whichever track you opt into, you land here at 1:00 PM for the group lunch. Pick your seafood at the stalls, they grill it. Casual, no reservation needed. ~10 min from Casco Viejo, ~15 min from JW. https://www.tripadvisor.com/Attraction_Review-g294480-d2589867-Reviews-Mercado_Publico_del_Marisco-Panama_City_Panama_Province.html.",
       "location": "Mercado de Marisco, Cinta Costera, Panama City"
     },
 
@@ -236,19 +236,19 @@
       "summary": "[TRACK C] Golf (course TBD)",
       "type": "optin",
       "start": "2026-07-18T08:00:00",
-      "end": "2026-07-18T13:00:00",
+      "end": "2026-07-18T12:30:00",
       "transparency": "transparent",
-      "description": "TRACK C: Golf. 18 holes, course + tee time TBD. Coordinate via the flight form's notes field or ping Laurence by Mon Jul 13. Lunch TBD — at the course or rejoin Tracks A/B at the fish market depending on timing."
+      "description": "TRACK C: Golf. 18 holes, course + tee time TBD (book early — pace-of-play target is 4.5 hrs to hit the 12:30 wrap). Coordinate via the opt-in form or ping Laurence by Thu Jul 2. All tracks reconvene at the Mercado de Marisco (fish market) for a 1:00 PM group lunch — Uber straight from the course."
     },
 
     {
       "id": "sat-decompress",
       "summary": "Hotel decompress — pool / shower / nap before Gaucho's",
       "type": "bookend",
-      "start": "2026-07-18T14:30:00",
+      "start": "2026-07-18T14:45:00",
       "end": "2026-07-18T18:00:00",
       "transparency": "transparent",
-      "description": "Free time at JW. Pool deck (Azul Restaurant has the poolside bar), shower, change into dinner clothes (pants + nice shoes for Gaucho's). Don't be late for 7 PM."
+      "description": "Free time at JW after the group fish-market lunch. Pool deck (Azul Restaurant has the poolside bar), shower, change into dinner clothes (pants + nice shoes for Gaucho's). Don't be late for 7 PM."
     },
 
     {
