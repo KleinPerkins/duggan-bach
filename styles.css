@@ -593,13 +593,15 @@ a:hover { text-decoration: underline; }
 }
 
 /* --- Action buttons (top nav) --- */
+/* --- Hero action row: grid that mirrors .quick-facts below so buttons
+       sit directly above the fact cards. Same max-width, padding, gap,
+       and responsive breakpoints — 3-col → 2-col → 1-col. --- */
 .actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  justify-content: center;
   max-width: var(--max-width);
-  margin: -32px auto 32px;
+  margin: -32px auto 16px;
   padding: 0 16px;
   position: relative;
   z-index: 10;
@@ -615,9 +617,8 @@ a:hover { text-decoration: underline; }
   box-shadow: var(--shadow-card);
   transition: transform 0.15s, box-shadow 0.15s;
   text-decoration: none;
-  flex: 1 1 auto;
   justify-content: center;
-  min-width: 200px;
+  min-width: 0;
 }
 .action-btn:hover { transform: translateY(-2px); text-decoration: none; box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
 .action-btn.primary {
@@ -632,14 +633,28 @@ a:hover { text-decoration: underline; }
 }
 .action-icon { font-size: 18px; }
 
-/* --- Quick facts --- */
+/* --- Quick facts: 3-col grid mirroring .actions above. Same max-width,
+       padding, gap, and breakpoints so each fact sits directly beneath
+       its corresponding action button. --- */
 .quick-facts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   max-width: var(--max-width);
   margin: 0 auto 48px;
   padding: 0 16px;
+}
+
+/* Responsive: collapse both grids in lock-step so the alignment holds */
+@media (max-width: 640px) {
+  .actions, .quick-facts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 420px) {
+  .actions, .quick-facts {
+    grid-template-columns: 1fr;
+  }
 }
 .fact {
   background: var(--color-bg-elevated);
