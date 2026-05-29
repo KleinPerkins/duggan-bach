@@ -608,19 +608,35 @@ a:hover { text-decoration: underline; }
 }
 .action-btn {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 14px 20px;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 18px;
   border-radius: var(--radius);
   font-weight: 600;
   font-size: 15px;
   box-shadow: var(--shadow-card);
   transition: transform 0.15s, box-shadow 0.15s;
   text-decoration: none;
-  justify-content: center;
+  text-align: center;
   min-width: 0;
 }
+.action-label-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.action-sub {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  opacity: 0.85;
+  max-width: 28ch;
+}
 .action-btn:hover { transform: translateY(-2px); text-decoration: none; box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
+.action-btn:hover .action-sub { opacity: 0.95; }
 .action-btn.primary {
   background: var(--color-accent);
   color: white;
@@ -632,6 +648,30 @@ a:hover { text-decoration: underline; }
   border: 1px solid var(--color-border);
 }
 .action-icon { font-size: 18px; }
+
+/* --- Hero intro paragraph (between hero header and action buttons) --- */
+.hero-intro {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 32px 20px 8px;
+  text-align: center;
+}
+.hero-intro p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+.hero-intro-sig {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+@media (max-width: 480px) {
+  .hero-intro { padding: 24px 18px 4px; }
+  .hero-intro p { font-size: 14px; }
+}
 
 /* --- Quick facts: 3-col grid mirroring .actions above. Same max-width,
        padding, gap, and breakpoints so each fact sits directly beneath
@@ -684,6 +724,28 @@ a:hover { text-decoration: underline; }
   font-size: 12px;
   color: var(--color-text-dim);
   line-height: 1.4;
+}
+.fact-list {
+  list-style: none;
+  margin: 2px 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fact-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text);
+  line-height: 1.35;
+}
+.fact-list-icon {
+  font-size: 14px;
+  flex: 0 0 auto;
+  width: 18px;
+  text-align: center;
 }
 
 /* --- Sections --- */
@@ -742,6 +804,44 @@ a:hover { text-decoration: underline; }
 }
 .optin-deadline.urgent { background: rgba(239, 68, 68, 0.25); color: #fca5a5; }
 .optin-deadline.passed { background: rgba(107, 114, 128, 0.2); color: var(--color-text-muted); }
+
+.optin-bullets {
+  list-style: none;
+  margin: 14px 0 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.optin-bullets li {
+  position: relative;
+  padding: 10px 12px 10px 28px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text);
+}
+.optin-bullets li::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 18px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(255,120,73,0.18);
+}
+.optin-bullets strong { color: var(--color-accent-2); font-weight: 700; }
+.optin-bullets em {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 2px 0 4px;
+}
+.optin-deadline-note { margin-top: 8px; }
 
 .optin-actions {
   margin: 20px 0 24px;
@@ -1108,13 +1208,37 @@ a:hover { text-decoration: underline; }
   margin-top: 4px;
 }
 .event-location::before { content: "📍 "; opacity: 0.6; }
+.event-loc-link {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(255,255,255,0.2);
+  transition: color 0.15s, border-color 0.15s;
+}
+.event-loc-link:hover {
+  color: var(--color-accent-2);
+  border-color: var(--color-accent-2);
+  text-decoration: none;
+}
 .event-desc {
   font-size: 13px;
   color: var(--color-text-muted);
   line-height: 1.5;
   margin-top: 8px;
 }
-.event-desc a { word-break: break-all; }
+.event-desc p { margin-bottom: 8px; line-height: 1.55; }
+.event-desc p:last-child { margin-bottom: 0; }
+.event-desc ul { margin: 6px 0 10px 0; padding-left: 18px; }
+.event-desc li { margin-bottom: 4px; line-height: 1.5; }
+.event-desc strong { color: var(--color-text); font-weight: 700; }
+.event-desc em { font-style: italic; color: var(--color-text); }
+.event-desc a {
+  color: var(--color-accent-2);
+  text-decoration: underline;
+  text-decoration-color: rgba(255,120,73,0.4);
+  text-underline-offset: 2px;
+  word-break: break-word;
+}
+.event-desc a:hover { text-decoration-color: var(--color-accent-2); }
 
 /* --- Flights section --- */
 .flight-actions {

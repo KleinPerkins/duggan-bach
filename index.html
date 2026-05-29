@@ -8,7 +8,7 @@
   <meta property="og:title" content="Duggan Bachelor Party — Panama City">
   <meta property="og:description" content="Jul 16–19, 2026 · JW Marriott Panama">
   <meta property="og:type" content="website">
-  <link rel="stylesheet" href="styles.css?v=1780042496">
+  <link rel="stylesheet" href="styles.css?v=1780044371">
   <link rel="preload" as="image" href="assets/intro-hype.png">
 </head>
 <body>
@@ -83,18 +83,34 @@
     </div>
   </header>
 
+  <section class="hero-intro">
+    <p>
+      Boys — thank you for clearing four days for this. Panama is gonna be a ride: rooftops over Casco Viejo, a private catamaran out to Taboga, the Canal at eye-level, and the kind of dinners that keep going. We've got the JW locked, the big nights pinned, and a few choose-your-own-adventure tracks for Saturday. Three things below to get sorted before we land.
+    </p>
+    <p class="hero-intro-sig">— LD</p>
+  </section>
+
   <nav class="actions">
     <a class="action-btn primary" href="#optin" id="optin-hero-btn">
-      <span class="action-icon">🎯</span>
-      <span class="action-label">Lock Your Picks</span>
+      <span class="action-label-row">
+        <span class="action-icon">🎯</span>
+        <span class="action-label">Lock Your Picks</span>
+      </span>
+      <span class="action-sub">Pick your Saturday track + Friday dinner so we can book it. ~60 sec.</span>
     </a>
     <a class="action-btn primary" href="#" id="subscribe-btn">
-      <span class="action-icon">📅</span>
-      <span class="action-label">Subscribe to Calendar</span>
+      <span class="action-label-row">
+        <span class="action-icon">📅</span>
+        <span class="action-label">Subscribe to Calendar</span>
+      </span>
+      <span class="action-sub">Drops every flight, pickup, dinner, and rooftop onto your phone calendar.</span>
     </a>
     <a class="action-btn primary" href="#flights" id="flight-btn">
-      <span class="action-icon">✈️</span>
-      <span class="action-label">Drop Your Flight Info</span>
+      <span class="action-label-row">
+        <span class="action-icon">✈️</span>
+        <span class="action-label">Drop Your Flight Info</span>
+      </span>
+      <span class="action-sub">Share your PTY arrival + departure so we can carpool Ubers.</span>
     </a>
   </nav>
 
@@ -110,9 +126,12 @@
       <span class="fact-sub" id="weather-sub"></span>
     </div>
     <div class="fact">
-      <span class="fact-label">Logistics</span>
-      <span class="fact-value">Pants + Uber</span>
-      <span class="fact-sub">Pants &amp; nice shoes for nights · Uber everywhere · party bus TBD</span>
+      <span class="fact-label">Know Before You Go</span>
+      <ul class="fact-list">
+        <li><span class="fact-list-icon" aria-hidden="true">👖</span><span>Pants + nice shoes for nights</span></li>
+        <li><span class="fact-list-icon" aria-hidden="true">🚗</span><span>Uber for everything</span></li>
+        <li><span class="fact-list-icon" aria-hidden="true">🚐</span><span>Party bus: TBD</span></li>
+      </ul>
     </div>
   </section>
 
@@ -125,8 +144,24 @@
       <div class="optin-deadline" id="optin-countdown">Loading deadline…</div>
     </div>
     <p class="section-sub">
-      Bookings (tee times, La Barbara reservation, tactical range) depend on these counts.
-      Submit by <strong>Thu Jul 2</strong> (2 weeks pre-trip). You can update anytime via your edit link.
+      Two calls to make so we can lock the bookings. Takes a minute.
+    </p>
+    <ul class="optin-bullets">
+      <li>
+        <strong>Saturday daytime</strong> — pick a track:
+        <em>A.</em> Panama Canal lochs + visitor center ·
+        <em>B.</em> Tactical shooting at Top Gun Panamá ·
+        <em>C.</em> Golf at Santa María (Jack Nicklaus design)
+      </li>
+      <li>
+        <strong>Friday dinner</strong> — pick a spot:
+        <em>A.</em> La Barbara x Aki (sushi, Casco Viejo, reservation) ·
+        <em>B.</em> Mercado de Marisco (fish market, walk-in) ·
+        <em>C.</em> Tacos Cholula (walking distance from JW)
+      </li>
+    </ul>
+    <p class="section-sub optin-deadline-note">
+      Submit by <strong>Thu Jul 2</strong> so we can hold tee times, La Barbara, and the range. You can edit your pick anytime via your personal edit link.
     </p>
 
     <div class="optin-actions">
@@ -202,7 +237,7 @@
   </footer>
 
   <script>
-    window.__BUILD_VERSION = "1780042496";
+    window.__BUILD_VERSION = "1780044371";
 
     // ── Hype intro controller + Canvas particle engine ───────────────────
     (function () {
@@ -387,7 +422,7 @@
       }
     })();
   </script>
-  <script src="config.js?v=1780042496"></script>
-  <script src="app.js?v=1780042496"></script>
+  <script src="config.js?v=1780044371"></script>
+  <script src="app.js?v=1780044371"></script>
 </body>
 </html>

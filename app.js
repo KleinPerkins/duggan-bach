@@ -328,8 +328,8 @@
     const timeHtml = e.isAllDay
       ? '<div class="event-time all-day">All day</div>'
       : `<div class="event-time"><span class="start">${formatTime(e.startDate, tz)}</span><span class="end">${formatTime(e.endDate, tz)}</span></div>`;
-    const locHtml = e.location ? `<div class="event-location">${escapeHtml(e.location)}</div>` : "";
-    const descHtml = e.description ? `<div class="event-desc">${linkify(escapeHtml(e.description))}</div>` : "";
+    const locHtml = e.location ? `<div class="event-location">${locationLink(e.location)}</div>` : "";
+    const descHtml = e.description ? `<div class="event-desc">${renderMarkdown(e.description)}</div>` : "";
     return `<div class="event-card type-${e.type}" id="event-${escapeHtml(e.id)}">${timeHtml}<div class="event-body"><div class="event-title">${tag}${escapeHtml(e.summary)}</div>${locHtml}${descHtml}</div></div>`;
   }
 
@@ -338,8 +338,113 @@
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
-  function linkify(s) {
-    return s.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+
+  /**
+   * Build a clickable Google Maps search link for a location string. We
+   * append "Panama City, Panama" if the string doesn't already contain
+   * "Panama" so generic place names still resolve to the right city.
+   */
+  function locationLink(loc) {
+    const safe = escapeHtml(loc);
+    const query = /panama/i.test(loc) ? loc : `${loc}, Panama City, Panama`;
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="event-loc-link">${safe}</a>`;
+  }
+
+  /**
+   * Tiny purpose-built Markdown-ish renderer. Input is plain text from
+   * itinerary.json — we control it, but we still escape HTML first to keep
+   * output safe. Supports:
+   *   **bold**           → <strong>
+   *   *italic*           → <em>
+   *   [text](url)        → <a target="_blank" rel="noopener">
+   *   bare https?://...  → auto-linked
+   *   blank line         → paragraph break
+   *   line(s) starting   → <ul><li>...</li></ul>
+   *     with "- "
+   * Use placeholders for inline links during transform so URL contents
+   * aren't accidentally re-matched by the bare-URL pass.
+   */
+  function renderMarkdown(src) {
+    // 1. Escape HTML up front
+    let s = escapeHtml(src);
+
+    // 2. Stash explicit [text](url) links as placeholders so their URLs
+    //    don't get caught by the bare-URL auto-linker.
+    const stash = [];
+    const stashLink = (html) => {
+      stash.push(html);
+      return `\u0000L${stash.length - 1}\u0000`;
+    };
+    // After escapeHtml, "(" and ")" are still literal but the URL may have
+    // entities like &amp;. The pattern matches escaped angle brackets too.
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, text, url) => {
+      const cleanUrl = url.replace(/&amp;/g, "&");
+      return stashLink(
+        `<a href="${escapeAttr(cleanUrl)}" target="_blank" rel="noopener">${text}</a>`
+      );
+    });
+
+    // 3. Auto-link bare URLs (http/https). Trim trailing punctuation that
+    //    isn't part of the URL.
+    s = s.replace(/(https?:\/\/[^\s<]+?)([.,;:)\]]?)(?=\s|$)/g, (_, url, tail) => {
+      return stashLink(
+        `<a href="${escapeAttr(url)}" target="_blank" rel="noopener">${url}</a>`
+      ) + tail;
+    });
+
+    // 4. Inline emphasis. **bold** before *italic* (longer pattern first).
+    s = s.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
+    s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+
+    // 5. Block-level: split on blank lines into paragraphs. Within each
+    //    paragraph, lines starting with "- " become a <ul>.
+    const blocks = s.split(/\n\s*\n/);
+    const html = blocks.map(block => {
+      const lines = block.split("\n");
+      // Detect a list block: every non-empty line starts with "- "
+      const listLines = lines.filter(l => l.trim().length > 0);
+      const isList = listLines.length > 0 && listLines.every(l => /^\s*-\s+/.test(l));
+      if (isList) {
+        const items = listLines.map(l => l.replace(/^\s*-\s+/, "").trim());
+        return `<ul>${items.map(i => `<li>${i}</li>`).join("")}</ul>`;
+      }
+      // Mixed: pull out any leading non-list text, then any list, then trailing text.
+      // Simpler: if the block has any "- " lines, split into paragraph + ul.
+      const groups = [];
+      let buf = [];
+      let mode = null; // "p" | "li"
+      const flush = () => {
+        if (buf.length === 0) return;
+        if (mode === "li") {
+          groups.push(`<ul>${buf.map(i => `<li>${i}</li>`).join("")}</ul>`);
+        } else {
+          groups.push(`<p>${buf.join(" ")}</p>`);
+        }
+        buf = [];
+      };
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.length === 0) continue;
+        const m = trimmed.match(/^-\s+(.*)$/);
+        if (m) {
+          if (mode !== "li") { flush(); mode = "li"; }
+          buf.push(m[1]);
+        } else {
+          if (mode !== "p") { flush(); mode = "p"; }
+          buf.push(trimmed);
+        }
+      }
+      flush();
+      return groups.join("");
+    }).join("");
+
+    // 6. Restore stashed links.
+    return html.replace(/\u0000L(\d+)\u0000/g, (_, i) => stash[Number(i)]);
+  }
+
+  function escapeAttr(s) {
+    return String(s).replace(/"/g, "&quot;");
   }
 
   function renderTabsAndPanels(groups) {
